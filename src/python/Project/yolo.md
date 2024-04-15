@@ -3,7 +3,7 @@
 order: -15
 title:  Ultralytics YOLOv8
 shortTitle: yolov8
-icon: advance
+icon: yolo
 
 ---
 

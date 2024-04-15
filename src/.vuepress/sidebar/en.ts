@@ -7,8 +7,8 @@ export const enSidebar = sidebar({
   "/java/": [
     {
       text: "Java Programming",
-      icon: "java",
-      link: "BasicSyntax/",
+      icon: "code",
+      link: "syntax/",
       children: "structure",
     },
   ],
@@ -16,7 +16,23 @@ export const enSidebar = sidebar({
     {
       text: "Python And AI",
       icon: "python",
-      link: "BasicSyntax/",
+      link: "syntax/",
+      children: "structure",
+    },
+  ],
+  "/tool/": [
+    {
+      text: "常用开发工具和环境搭建",
+      icon: "application",
+      link: "tool/",
+      children: "structure",
+    },
+  ],
+  "/web/": [
+    {
+      text: "前端开发知识体系",
+      icon: "application",
+      link: "web/",
       children: "structure",
     },
   ]

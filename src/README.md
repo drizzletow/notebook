@@ -1,35 +1,35 @@
 ---
 home: true
 icon: home
-title: Project home
+title: Home
 heroImage: https://theme-hope-assets.vuejs.press/logo.svg
 bgImage: https://theme-hope-assets.vuejs.press/bg/6-light.svg
 bgImageDark: https://theme-hope-assets.vuejs.press/bg/6-dark.svg
 bgImageStyle:
   background-attachment: fixed
-heroText: Develop Note
+heroText: 日常开发记录和常用工具
 tagline: You can place the description of the project here.
 actions:
-  - text: How to Use
-    icon: lightbulb
+  - text: 日常记录
+    icon: icon-unusual
     link: ./demo/
     type: primary
 
-  - text: Docs
+  - text: 书签
     link: ./guide/
 
 highlights:
-  - header: Common tool and skill
+  - header: 常用开发环境和工具
     image: /assets/image/box.svg
     bgImage: https://theme-hope-assets.vuejs.press/bg/3-light.svg
     bgImageDark: https://theme-hope-assets.vuejs.press/bg/3-dark.svg
     highlights:
       - title: Development Tools,such as envs, VS code and IDEA etc.
-        link: https://theme-hope.vuejs.press/guide/markdown/
+        link: /tool/idea
       - title: Version control(git) to enabling efficient collaboration, managing changes.
-        link: https://theme-hope.vuejs.press/guide/markdown/
+        link: /tool/git
       - title: Common Linux Commands,such as ls, cd, cat and etc.
-        link: https://theme-hope.vuejs.press/guide/layout/
+        link: tool/Linux/linux
 
   - header: Add things you want in markdown
     description: We extended the standard commonMark specification and added tons of new features for you.

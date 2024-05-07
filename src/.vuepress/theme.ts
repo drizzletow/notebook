@@ -129,6 +129,7 @@ export default hopeTheme({
 
       // install mermaid before enabling it
       mermaid: true,
+      flowchart: true,
 
       // playground: {
       //   presets: ["ts", "vue"],

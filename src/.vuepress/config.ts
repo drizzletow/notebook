@@ -10,11 +10,11 @@ export default defineUserConfig({
       title: "Notebook",
       description: "A docs for develop note",
     },
-    "/zh/": {
-      lang: "zh-CN",
-      title: "开发笔记",
-      description: "个人开发笔记记录",
-    },
+    // "/zh/": {
+    //   lang: "zh-CN",
+    //   title: "开发笔记",
+    //   description: "个人开发笔记记录",
+    // },
   },
 
   theme,

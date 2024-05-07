@@ -1,6 +1,6 @@
 ---
 
-order: -10
+order: 1
 title:  IDEA和Eclipse
 shortTitle: JetbrainsIDEA
 icon: intellij-idea
@@ -8,7 +8,6 @@ icon: intellij-idea
 ---
 
 
-# IDEA和Eclipse
 
 ## 一 IDEA设置
 
@@ -39,7 +38,7 @@ ja-netfilter code：https://jetbra.in/s
 
 自动导包、自动删除不需要的import语句
 
-![image-20211111204005219](./vx_images/image-20211111204005219.png)
+![image-20211111204005219](../vx_images/image-20211111204005219.png)
 
 
 <br>
@@ -56,7 +55,7 @@ ja-netfilter code：https://jetbra.in/s
  */
 ```
 
-![image-20211111205310895](./vx_images/image-20211111205310895.png)
+![image-20211111205310895](../vx_images/image-20211111205310895.png)
 
 
 
@@ -66,7 +65,7 @@ ja-netfilter code：https://jetbra.in/s
 
 **File–>Settings–>Editor–>Live Templates、点击右边的 + 号, 选择 Template Group** 、创建自己的组名
 
-![image-20211111212130896](./vx_images/image-20211111212130896.png)
+![image-20211111212130896](../vx_images/image-20211111212130896.png)
 
 
 
@@ -81,13 +80,13 @@ $params$
  */
 ```
 
-![image-20211111213349000](./vx_images/image-20211111213349000.png)
+![image-20211111213349000](../vx_images/image-20211111213349000.png)
 
 
 
 点击 Define 选择java，也可以选择everywhere 、设置Edit variables 
 
-![image-20211111215738925](./vx_images/image-20211111215738925.png)
+![image-20211111215738925](../vx_images/image-20211111215738925.png)
 
 ```groovy
 groovyScript("def result=''; def params=\"${_1}\".replaceAll('[\\\\[|\\\\]|\\\\s]', '').split(',').toList(); for(i = 0; i < params.size(); i++) {result+=' * @param ' + params[i] + ((i < params.size() - 1) ? '\\r\\n' : '')}; return result", methodParameters())
@@ -152,7 +151,7 @@ mvn dependency:resolve -Dclassifier=sources
 
 如图：
 
-![image-20211101162525695](./vx_images/image-20211101162525695.png)
+![image-20211101162525695](../vx_images/image-20211101162525695.png)
 
 <br>
 
@@ -166,7 +165,7 @@ mvn dependency:resolve -Dclassifier=sources
 
 国内下载vscode速度慢问题解决
 
-![image-20220407153956878](./vx_images/image-20220407153956878.png)
+![image-20220407153956878](../vx_images/image-20220407153956878.png)
 
 ```bash
 
@@ -213,7 +212,7 @@ vscode.cdn.azure.cn       # <--------就是左边这个 (国内的镜像)
 
 Tomcat：
 
-![image-20220408133835668](./vx_images/image-20220408133835668.png)
+![image-20220408133835668](../vx_images/image-20220408133835668.png)
 
 <br/>
 
@@ -221,7 +220,7 @@ Tomcat：
 
 设置 → 时间和语言 —— 语言 —— 管理语言设置 
 
-![image-20220408134259995](./vx_images/image-20220408134259995.png)
+![image-20220408134259995](../vx_images/image-20220408134259995.png)
 
 <br/>
 
@@ -231,7 +230,7 @@ Tomcat：
 
 进行过（不明骚操作的）可以直接去C盘用户目录下寻找对应文件，参考路径如下：
 
-![image-20220408134742497](./vx_images/image-20220408134742497.png)
+![image-20220408134742497](../vx_images/image-20220408134742497.png)
 
 ```bash
 
@@ -244,7 +243,7 @@ Tomcat：
 
 IDEA设置中的编码修改：
 
-![image-20220408135025278](./vx_images/image-20220408135025278.png)
+![image-20220408135025278](../vx_images/image-20220408135025278.png)
 
 
 

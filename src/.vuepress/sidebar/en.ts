@@ -22,7 +22,7 @@ export const enSidebar = sidebar({
   ],
   "/tool/": [
     {
-      text: "常用开发工具和环境搭建",
+      text: "常用软件和开发工具",
       icon: "application",
       link: "tool/",
       children: "structure",

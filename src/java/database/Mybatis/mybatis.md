@@ -4,7 +4,7 @@ order: 1
 
 ---
 
-# Mybatis框架及其使用
+# Mybatis框架
 
 ## 一 mybatis document
 

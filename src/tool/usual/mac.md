@@ -521,6 +521,42 @@ Login Shell 是指当用户首次登录或从休眠状态唤醒计算机, 或通
   curl --progress-bar https://example.com/largefile.iso
   ```
 
+::: tip 通过代理使用curl
+
+macOS和Linux系统中，`curl`遵循环境变量`http_proxy`、`https_proxy`、`all_proxy`来决定其代理设置。
+
+先开启clashx等软件, 然后通过以下命令临时为`curl`设置代理：
+
+```sh
+export http_proxy="http://127.0.0.1:端口号"
+export https_proxy="http://127.0.0.1:端口号"
+curl http://example.com
+```
+将`端口号`替换成你ClashX代理的实际端口号（如7890）。这种方式设置的代理是临时的，关闭当前的终端会话后就会失效。
+
+如果你希望代理设置持久化，可以将上述`export`命令添加到你的`~/.zshrc`或`~/.bash_profile`文件中：
+
+```sh
+echo 'export http_proxy="http://127.0.0.1:端口号"' >> ~/.zshrc
+echo 'export https_proxy="http://127.0.0.1:端口号"' >> ~/.zshrc
+```
+
+然后，你需要重新加载配置文件，或者重新打开一个终端窗口。
+
+### 使用命令行参数设置代理
+
+如果你不想更改环境变量，`curl`命令本身支持通过命令行参数设置代理。使用`-x`或`--proxy` 参数：
+
+```sh
+curl -x http://127.0.0.1:7890  https://www.google.com
+```
+
+这种方法仅对当前使用的`curl`命令生效，不需要更改环境设置。
+
+记得将上述的`端口号`替换成ClashX实际使用的端口号。设置完成后，`curl`命令应该就会通过指定的ClashX代理访问网络了。
+:::
+
+
 #### 2. `wget`（如果已安装）
 
 `wget` 是另一个常用的下载工具，它在macOS上不是默认安装的，但可以通过Homebrew等包管理器安装。`wget` 提供了丰富的下载选项。
@@ -635,6 +671,99 @@ sdk selfupdate
 通过提供这样一套简洁的接口和功能，SDKMAN! 极大地简化了开发环境的配置和管理过程，提高了开发者的效率。
 
 
-### Node Version Manager
 
-在Mac中管理多个Node.js版本，主要有两种广泛使用的工具：`nvm（Node Version Manager）` 和 `n` 
+### Node.js多版本管理
+
+nvm（Node Version Manager）是一个命令行工具，主要用于 Node.js 的版本管理。它使用户能够在同一台计算机上安装和切换多个版本的 Node.js，而不会造成版本冲突的问题。这对于需要在不同项目中使用不同 Node.js 版本的开发者来说非常有用
+
+要在Mac的ZSH中使用NVM（Node Version Manager），你可以遵循以下步骤进行安装和配置。这些步骤结合了NVM官方推荐的做法以及适合Mac环境的指导：
+
+1. **打开终端**：首先，打开你的Mac的终端应用。
+
+2. **安装依赖**：确保你的系统中已经安装了`curl`。大多数Mac系统默认都已安装，如果没有，可以通过Homebrew安装（如果你还没有Homebrew，可以访问[https://brew.sh](https://brew.sh) 并按照指引安装）。
+
+3. **下载并安装NVM脚本**：在终端中运行以下命令来下载并安装NVM的安装脚本。这会自动处理安装过程并将NVM安装到你的用户目录下的`.nvm`目录中。
+
+   ```bash
+   curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+   ```
+
+   这里使用了特定版本号（例如`v0.39.7`）作为示例，你可以访问[NVM的GitHub页面](https://github.com/nvm-sh/nvm)查看最新的稳定版本号，并替换上述命令中的版本号。
+
+4. **加载NVM**：为了使NVM在每个新的shell会话中都能使用，你需要在你的`.zshrc`配置文件中添加NVM的初始化命令。在终端中输入以下命令来编辑`.zshrc`：
+
+   ```bash
+   echo "export NVM_DIR=\"$HOME/.nvm\"" >> ~/.zshrc
+   echo "[ -s \"$NVM_DIR/nvm.sh\" ] && \. \"$NVM_DIR/nvm.sh\"  # This loads nvm" >> ~/.zshrc
+   ```
+
+   如果你也想加载NVM的bash_completion（可选，但对命令补全有帮助），可以再加上这一行：
+
+   ```bash
+   echo "[ -s \"$NVM_DIR/bash_completion\" ] && \. \"$NVM_DIR/bash_completion\"  # This loads nvm bash_completion" >> ~/.zshrc
+   ```
+
+5. **使更改生效**：为了让修改后的`.zshrc`立即生效，无需重启终端，只需运行：
+
+   ```bash
+   source ~/.zshrc
+   ```
+
+**nvm常用命令**：
+```bash
+nvm -v              # 查看NVM版本, 等效于 nvm --version
+nvm ls              # 列出已安装的Node.js版本，标记当前使用的版本
+nvm current         # 查看当前正在使用的Node.js版本
+
+nvm ls-remote            # 查看所有可安装的Node.js版本
+nvm install <version>    # 安装指定版本的Node.js，例如: nvm install 14.15.0
+nvm uninstall <version>  # 卸载指定版本的Node.js，例如: nvm uninstall 10.15.3
+
+nvm use <version>        # 切换到指定版本的Node.js，如: nvm use 12.20.0
+
+nvm alias default <version>    # 设置默认Node.js版本，新开终端时自动使用
+
+nvm alias <name> <version>  # 创建版本别名，如: nvm alias node-latest 16.14.0
+nvm unalias <name>          # 删除已创建的版本别名，如: nvm unalias node-latest
+```
+
+::: info 使用Homebrew安装nvm
+
+1. **直接安装nvm**
+
+   ```sh
+   brew install nvm
+   ```
+
+2. **创建nvm目录：** 安装`nvm`后，需要创建一个目录来存储nvm的数据（包括安装的Node版本）。可以通过运行以下命令来创建该目录：
+
+   ```sh
+   mkdir ~/.nvm
+   ```
+
+**配置zsh环境变量**: 
+
+1. **编辑zsh配置文件：** 打开`~/.zshrc`文件以编辑zsh的配置。你可以使用任意文本编辑器打开它，例如使用`vim`：
+
+   ```sh
+   vim ~/.zshrc
+   ```
+
+2. **添加nvm配置信息：** 在`~/.zshrc`文件中，添加以下行以配置nvm的环境变量：
+
+   ```sh
+   export NVM_DIR="$HOME/.nvm"
+   [ -s "/usr/local/opt/nvm/nvm.sh" ] && \. "/usr/local/opt/nvm/nvm.sh"  # This loads nvm
+   [ -s "/usr/local/opt/nvm/etc/bash_completion.d/nvm" ] && \. "/usr/local/opt/nvm/etc/bash_completion.d/nvm"  # This loads nvm bash_completion
+   ```
+
+   这些行设置了nvm的目录并加载nvm到你的shell中。
+
+3. **应用配置：** 配置完成后，保存并关闭文件。然后，在终端中运行以下命令以应用更改：
+
+   ```sh
+   source ~/.zshrc
+   ```
+:::
+
+

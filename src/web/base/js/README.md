@@ -6,3 +6,5 @@ index: false
 title: JavaScript
 
 ---
+
+<Catalog hideHeading/>

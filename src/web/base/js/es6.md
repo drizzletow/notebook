@@ -776,6 +776,45 @@ for (let value of myArray) {
 ```
 
 
+### 10 Optional Chaining
+
+可选链（Optional Chaining）操作符最初是在ES2020（ECMAScript 2020）规范中正式引入的。
+
+在可选链出现之前，如果要安全地访问一个对象的深层属性，开发者通常需要逐级检查每一级是否为`null`或`undefined`，以避免运行时错误。例如，访问`obj?.property1?.property2`这样的路径时，如果不使用可选链，可能需要写成：
+```javascript
+if (obj && obj.property1 && obj.property1.property2) {
+    // 安全地使用 obj.property1.property2
+}
+```
+这种写法不仅冗长，还降低了代码的可读性和维护性，特别是在有多层嵌套的情况下。
+
+
+**代码使用示例**：
+
+假设我们有一个用户对象，但不确定其中的某些属性是否存在：
+```javascript
+let user = {
+    profile: {
+        // 可能存在也可能不存在的address属性
+    }
+};
+
+// 传统做法
+let address;
+if (user && user.profile) {
+    address = user.profile.address;
+}
+
+// 使用可选链
+let addressWithOptionalChaining = user?.profile?.address;
+
+// 如果user.profile不存在，addressWithOptionalChaining会自动被赋予undefined，而不是抛出错误
+```
+
+通过可选链，我们无需显式检查`user`或`user.profile`是否存在，就能安全地尝试访问`address`属性，大大简化了代码。如果访问路径上的任何部分为`null`或`undefined`，整个表达式的结果就是`undefined`，而不是抛出错误。
+
+可选链操作符与解构赋值、扩展运算符、Rest参数等一起构成了ES6及以后版本中关于对象处理的重要改进。它也属于ES的新语法特性，反映了现代JavaScript在类型安全和代码简洁性方面的发展趋势。
+
 
 
 ## 二 Async异步编程
@@ -1156,9 +1195,9 @@ JavaScript中元编程的一些常见工具和方法包括：
 元编程的应用非常广泛，它提供了极大的灵活性和强大的功能，但是如果使用不当，也可能导致代码难以维护和理解，甚至引入安全问题。因此，合理和谨慎的使用元编程技术是非常重要的。
 
 
-### 1 Object.definexxx
+### 1 精确操控对象属性
 
-`Object.defineProperty()` 和 `Object.defineProperties()` 是JavaScript中用于精确添加或修改对象属性的方法，提供了比传统赋值更多的控制能力，包括属性是否可枚举、可写、可配置等。
+`Object.defineProperty()` 和 `Object.defineProperties()` 是JavaScript中使用 `描述符（Descriptor）` 来精确添加或修改对象属性的方法，提供了比传统赋值更多的控制能力，包括属性是否可枚举、可写、可配置等。
 
 **Object.defineProperty()**
 
@@ -1166,15 +1205,9 @@ JavaScript中元编程的一些常见工具和方法包括：
 
 1. `obj`：要在其上定义属性的对象。
 2. `prop`：要定义或修改的属性的名称或`Symbol`。
-3. `descriptor`：属性描述符对象，这个对象描述了属性的行为。描述符对象可以有以下键：
-   - `value`：属性的值。
-   - `writable`：当且仅当属性的值可以被改变时为`true`。
-   - `configurable`：若为`true`，该属性的描述符可以被改变，同时该属性也可以从对应对象上删除。
-   - `enumerable`：如果为`true`，该属性在枚举相应对象上的属性时会被枚举到。
-   - `get`：属性的`getter`函数，当访问该属性时会调用此函数。`getter`函数没有参数。
-   - `set`：属性的`setter`函数，当属性值被修改时，会调用此函数。`setter`函数接受一个参数（即新值）。
+3. `descriptor`：属性描述符对象，这个对象描述了属性的行为。参照后面对 描述符（Descriptor）的介绍
 
-**Object.defineProperty()** 使用示例
+Object.defineProperty() 使用示例
 
 ```javascript
 const person = {};
@@ -1198,7 +1231,7 @@ console.log(person.name); // "Jane"
 1. `obj`：要定义其属性的对象。
 2. `props`：要定义其可枚举属性或修改的属性描述符的对象。此对象中的每个属性对应一个属性描述符。
 
-**Object.defineProperties()** 使用示例
+Object.defineProperties() 使用示例
 
 ```javascript
 const person = {};
@@ -1223,6 +1256,73 @@ person.age = 25;
 console.log(person.age); // 30
 ```
 在使用这些方法时，需要注意默认情况下，除非显式指定，否则所有配置选项（`writable`、`configurable`、`enumerable`）都默认为`false`。这使得属性成为不可枚举、不可写和不可配置的，这是使用这些方法的一个重要考虑点。
+
+
+::: info 描述符（Descriptor）
+在JavaScript中，描述符（Descriptor）是与对象属性相关联的一组元数据，控制着属性的行为，如是否可写、可配置或可枚举等。描述符主要分为两种类型：数据描述符（用于普通值属性）和存取描述符（用于getter/setter属性）。描述符属于JavaScript的原型和继承机制的知识领域，特别是与`Object.defineProperty()`方法紧密相关，这是ECMAScript 5引入的一个重要特性，用于精确控制对象属性的各个方面。
+
+#### 描述符的组成部分
+
+**数据描述符** 包含以下可选键值：
+- `value`：属性的值。
+- `writable`：布尔值，表示属性的值是否可写。
+- `configurable`：布尔值，表示属性是否可被删除或其描述符是否可被修改。
+
+**存取描述符** 包含以下可选键值：
+- `get`：一个函数，用于获取属性值。
+- `set`：一个函数，用于设置属性值。
+- `configurable`：同上，表示描述符是否可被修改。
+
+
+#### 数据描述符示例
+
+```javascript
+const obj = {};
+
+// 使用Object.defineProperty定义一个不可写的属性
+Object.defineProperty(obj, 'readOnlyProp', {
+    value: 'This is a read-only property',
+    writable: false, // 设置为false，使其不可写
+    enumerable: true, // 可枚举
+    configurable: true // 可配置
+});
+
+console.log(obj.readOnlyProp); // 输出: This is a read-only property
+obj.readOnlyProp = 'Attempt to change'; // 尝试修改，但不会生效
+console.log(obj.readOnlyProp); // 输出仍为: This is a read-only property
+```
+
+#### 存取描述符示例
+
+```javascript
+const counterObj = {};
+
+let count = 0;
+
+// 使用getter和setter定义一个计数器属性
+Object.defineProperty(counterObj, 'count', {
+    get: function() {
+        return count;
+    },
+    set: function(value) {
+        if (value >= 0) {
+            count = value;
+        } else {
+            console.log("Count cannot be negative.");
+        }
+    },
+    enumerable: true,
+    configurable: true
+});
+
+console.log(counterObj.count); // 输出: 0
+counterObj.count = 5; 
+console.log(counterObj.count); // 输出: 5
+counterObj.count = -1; // 输出: Count cannot be negative.
+console.log(counterObj.count); // 仍然是: 5
+```
+:::
+
 
 
 ### 2 eval和function

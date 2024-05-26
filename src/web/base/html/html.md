@@ -233,20 +233,19 @@ div和span标签 是没有语义的， 但确是网页布局主要使用的2个�
 
 
 
-**【路径问题说明】**: 
-
-```java
-/*
-java中的路径:
-       相对路径: 相对于文件的位置 (./   ../   ../../  )
-       绝对路径: 以盘符开头(C:\index.html)
+::: info 路径问题说明
+#### **java中的路径**:
+1. **相对路径**: 相对于文件的位置 (`./`,   `../`,   `../../`)
+2. **绝对路径**: 以盘符开头(`C:\index.html`)
            
-前端的路径:
-       相对路径:  相对于文件的位置 (./   ../   ../../  )
-       绝对路径:  是一个url （带盘符的那种意味着要加载客户端文件，这是极不安全的行为，浏览器不会允许）
-       	并且, 即使我们写的是相对路径, 这个相对路径的代码被浏览器解析的时候(前端代码都是给用户的浏览器解析的), 
-       	也会拼接变成一个url(变成绝对路径)
-```
+#### **前端中的路径**:
+1. **相对路径**:  相对于文件的位置 (`./` ,  `../` ,  `../../`)
+2. **绝对路径**:  是一个url 
+    - 以盘符开头的路径 这种路径意味着要加载客户端文件，这是极不安全的行为，浏览器不会允许
+    - 以域名或IP地址开头的路径 （最常见的前端路径）
+
+如果我们写的是相对路径, 这个相对路径的代码被浏览器解析的时候(前端代码都是给用户的浏览器解析的), 也会拼接变成一个url(变成绝对路径)
+:::
 
 <br/>
 
@@ -688,55 +687,82 @@ form属性:
 
 
 ## 三 标签英文全称
+### 文本样式类标签
+| HTML标签  | 英文全称   | 中文释义           |
+| --------- | ---------- | ------------------ |
+| b         | Bold       | 粗体（文本）       |
+| i         | Italic     | 斜体（文本）       |
+| u         | Underlined | 下划线（文本）     |
+| em        | Emphasized | 加重（文本）       |
+| strong    | Strong     | 加重（文本）       |
+| small     | Small      | 变小（文本）       |
+| s/ strike | Strikethrough | 删除线         |
+| sub       | Subscripted | 下标（文本）      |
+| sup       | Superscripted | 上标（文本）    |
+| code      | Code       | 源代码（文本）     |
+| kbd       | Keyboard   | 键盘（文本）       |
+| samp      | Sample     | 示例（文本）       |
+| tt        | Teletype   | 打印机（文本）     |
+| font      | Font       | 字体               |
 
-常用HTML标签的英文全称及简单描述：
+### 结构和格式类标签
+| HTML标签 | 英文全称                  | 中文释义                       |
+| -------- | ------------------------- | ------------------------------ |
+| a        | Anchor                    | 锚                             |
+| p        | Paragraph                 | 段落                           |
+| br       | Break                     | 换行                           |
+| div      | Division                  | 分隔                           |
+| span     | Span                      | 范围                           |
+| pre      | Preformatted              | 预定义格式（文本）             |
+| hr       | Horizontal Rule           | 水平尺                         |
+| bdo      | Direction of Text Display | 文本显示方向                   |
+| center   | Centered                  | 居中（文本）                   |
 
-| HTML标签  | 英文全称                  | 中文释义                       |
-| --------- | ------------------------- | ------------------------------ |
-| a         | Anchor                    | 锚                             |
-| alt       | alter                     | 替用(一般是图片显示不出的提示) |
-| b         | Bold                      | 粗体（文本）                   |
-| bdo       | Direction of Text Display | 文本显示方向                   |
-| br        | Break                     | 换行                           |
-| center    | Centered                  | 居中（文本）                   |
-| cite      | Citation                  | 引用                           |
-| code      | Code                      | 源代码（文本）                 |
-| dd        | Definition Description    | 定义描述                       |
-| del       | Deleted                   | 删除（的文本）                 |
-| dfn       | Defines a Definition Term | 定义定义条目                   |
-| div       | Division                  | 分隔                           |
-| dl        | Definition List           | 定义列表                       |
-| dt        | Definition Term           | 定义术语                       |
-| em        | Emphasized                | 加重（文本）                   |
-| font      | Font                      | 字体                           |
-| h1~h6     | Header 1 to Header 6      | 标题1到标题6                   |
-| hr        | Horizontal Rule           | 水平尺                         |
-| href      | hypertext reference       | 超文本引用                     |
-| i         | Italic                    | 斜体（文本）                   |
-| iframe    | Inline frame              | 定义内联框架                   |
-| ins       | Inserted                  | 插入（的文本）                 |
-| kbd       | Keyboard                  | 键盘（文本）                   |
-| li        | List Item                 | 列表项目                       |
-| nl        | navigation lists          | 导航列表                       |
-| ol        | Ordered List              | 排序列表                       |
-| optgroup  | Option group              | 定义选项组                     |
-| p         | Paragraph                 | 段落                           |
-| pre       | Preformatted              | 预定义格式（文本 ）            |
-| q         | Quotation                 | 引用语                         |
-| rel       | Reload                    | 加载                           |
-| s/ strike | Strikethrough             | 删除线                         |
-| samp      | Sample                    | 示例（文本                     |
-| small     | Small                     | 变小（文本）                   |
-| span      | Span                      | 范围                           |
-| src       | Source                    | 源文件链接                     |
-| strong    | Strong                    | 加重（文本）                   |
-| sub       | Subscripted               | 下标（文本）                   |
-| sup       | Superscripted             | 上标（文本）                   |
-| td        | table data cell           | 表格中的一个单元格             |
-| th        | table header cell         | 表格中的表头                   |
-| tr        | table row                 | 表格中的一行                   |
-| tt        | Teletype                  | 打印机（文本）                 |
-| u         | Underlined                | 下划线（文本）                 |
-| ul        | Unordered List            | 不排序列表                     |
-| var       | Variable                  | 变量（文本）                   |
+### 列表和目录标签
+| HTML标签 | 英文全称        | 中文释义           |
+| -------- | --------------- | ------------------ |
+| ul       | Unordered List  | 不排序列表         |
+| ol       | Ordered List    | 排序列表           |
+| li       | List Item       | 列表项目           |
+| dl       | Definition List | 定义列表           |
+| dt       | Definition Term | 定义术语           |
+| dd       | Definition Description | 定义描述   |
+| nl       | Navigation Lists | 导航列表           |
+| optgroup | Option group    | 定义选项组         |
 
+### 引用和引用相关标签
+| HTML标签 | 英文全称    | 中文释义      |
+| -------- | ----------- | ------------- |
+| cite     | Citation    | 引用          |
+| q        | Quotation   | 引用语        |
+| ins      | Inserted    | 插入（的文本）|
+| del      | Deleted     | 删除（的文本）|
+
+### 表格相关标签
+| HTML标签 | 英文全称       | 中文释义         |
+| -------- | -------------- | ---------------- |
+| table    | Table          | 表格             |
+| tr       | Table Row      | 表格中的一行     |
+| th       | Table Header Cell | 表格中的表头 |
+| td       | Table Data Cell | 表格中的一个单元格 |
+
+### 链接和引用相关标签
+| HTML标签 | 英文全称            | 中文释义                   |
+| -------- | ------------------- | -------------------------- |
+| href     | Hypertext Reference | 超文本引用                 |
+| alt      | Alter               | 替用(一般是图片显示不出的提示) |
+| src      | Source              | 源文件链接                 |
+| rel      | Reload              | 加载                       |
+
+### 标题标签及其他标签
+| HTML标签 | 英文全称        | 中文释义       |
+| -------- | --------------- | -------------- |
+| h1~h6    | Header 1 to 6   | 标题1到标题6   |
+
+其他：
+| HTML标签 | 英文全称    | 中文释义       |
+| -------- | ----------- | -------------- |
+| iframe   | Inline Frame | 定义内联框架    |
+| var      | Variable    | 变量（文本）    |
+
+通过这样的分组，能够更清晰地理解每个HTML标签的用途和分类，便于学习和查找。

@@ -1,444 +1,837 @@
 ---
 
 order: 1
-title: CSS基础
+title: CSS选择器与盒模型
 
 ---
 
 
-## 一 CSS基础
 
-**CSS书写规范及注释**： 
 
-- 选择器 与 `{` 之间必须包含空格
-- 属性定义必须另起一行、属性定义后必须以分号结尾
-- 属性名与之后的` :` 之间不允许包含空格，` :` 与 属性值之间必须包含空格
-- 并集选择器，每个选择器声明必须独占一行
-- 一般情况情况下，选择器的嵌套层级应不大于 3 级，位置靠后的限定条件应尽可能精确
+
+## CSS基础和样式
+
+### 书写规范及注释
+
+1. **属性名与值全部小写**：CSS中标签名、属性名和属性值都使用小写。
+2. **属性名和属性值之间保留一个空格**：如`color: red;`。
+3. **语句结尾加分号**：每条CSS语句的结尾加分号，即使是最后一条规则。
+4. **缩进与对齐**：用两个或四个空格进行缩进，确保代码结构清晰。
+
+**注释**：
+  ```css
+  /* 这是单行注释 */
+  p {
+      color: red; /* 行内注释 */
+  }
+
+  /*
+   * 这是多行注释，
+   * 可以分为几行
+   */
+  ```
+
+
+### 样式表分类
+
+- **内联样式表（Inline CSS）**：
+  直接在HTML元素的`style`属性中写CSS。优点是简单，不用替换文件；缺点是可维护性差，不易复用。
+  
+  ```html
+  <p style="color: blue; font-size: 16px;">这是一个段落。</p>
+  ```
+
+- **内部样式表（Internal CSS）**：
+  在HTML文件的`<style>`标签中书写CSS。适用于单独页面的样式定义。
+  
+  ```html
+  <style>
+    p {
+        color: blue;
+        font-size: 16px;
+    }
+  </style>
+  ```
+
+- **外部样式表（External CSS）**：
+  在单独的CSS文件中书写，然后通过HTML的`<link>`标签引用。适用于多个页面共享样式。
+  
+  ```html
+  <!-- HTML 文件 -->
+  <link rel="stylesheet" href="styles.css">
+  
+  /* styles.css 文件 */
+  p {
+      color: blue;
+      font-size: 16px;
+  }
+  ```
+
+**注意事项**：
+- 优先在项目中使用外部样式表以提高代码复用性和可维护性。
+- 内部样式表适用于单页面快速开发和测试。
+- 内联样式应尽量避免，以保持HTML的整洁和可读性。
+
+
+### 常用样式介绍
+
+- **颜色（Color）**：`color`用来设置文本颜色，`background-color`用来设置背景颜色。
+- **字体（Font）**：`font-family`用来设置字体，`font-size`用来设置字体大小，`font-weight`用来设置字体粗细。
+- **文本（Text）**：`text-align`用来设置文本对齐方式，`text-decoration`用来设置文本装饰，`line-height`用来设置行高。
+- **页面布局（Layout）**：`display`用来设置元素显示方式，`position`用来设置元素定位方式，`margin`用来设置外边距，`padding`用来设置内边距。
+- **边框（Border）**：`border-width`用来设置边框宽度，`border-style`用来设置边框样式，`border-color`用来设置边框颜色。
 
 ```css
-/*  注释内容  */
-```
-
-<br/>
-
-
-
-### 1. 样式表分类
-|   样式表   |          优点          |          缺点          |   使用情况    |     控制范围      |
-| --------- | --------------------- | --------------------- | ------------ | ---------------- |
-| 行内样式表 | 书写方便，权重高        | 没有实现样式和结构相分离 | 较少          | 控制一个标签（少） |
-| 内部样式表 | 部分结构和样式相分离     | 没有彻底分离            | 较多          | 控制一个页面（中） |
-| 外部样式表 | 完全实现结构和样式相分离 | 需要引入               | 最多，强烈推荐 | 控制整个站点（多） |
-
-
-
-<br/>
-
-
-
-
-### 2. CSS选择器
-|   选择器    |            作用            |          缺点          |  使用情况  |         用法         |
-| ----------- | -------------------------- | --------------------- | --------- | -------------------- |
-| 标签选择器   | 可以选出所有相同的标签，比如p | 不能差异化选择          | 较多       | `p { color：red;}`  |
-| 类选择器     | 可以选出1个或者多个标签       | 可以根据需求选择         | 非常多     | `.nav { color: red; }` |
-| id选择器     | 一次只能选择器1个标签         | 只能使用一次            | 不推荐使用 | `#nav {color: red;}` |
-| 通配符选择器 | 选择所有的标签              | 选择的太多，有部分不需要 | 不推荐使用 | `* {color: red;}`    |
-
-<br/>
-
-|   复合选择器 |          作用          |        特征        | 使用情况 |             隔开符号及用法             |
-| ------------ | --------------------- | ------------------ | -------- | ------------------------------------ |
-| 后代选择器     | 用来选择元素后代         | 是选择所有的子孙后代 | 较多     | 符号是**空格** `.nav a`               |
-| 子代选择器     | 选择 最近一级元素        | 只选亲儿子          | 较少     | 符号是 >   `.nav>p`               |
-| 交集选择器     | 选择两个标签交集的部分   | 既是 又是           | 较少     | **没有符号**  `p.one`                 |
-| 并集选择器     | 选择某些相同样式的选择器 | 可以用于集体声明     | 较多     | 符号是**逗号** `.nav, .header`        |
-| 链接伪类选择器 | 给链接更改状态          |                    | 较多     | 重点记住 `a{}` 和 `a:hover` |
-
-<br/>
-
-```css
-/* 并集选择器 */
-.post,
-.page,
-.comment {
-    line-height: 1.5;
+/* 设置段落样式 */
+p {
+    color: blue; /* 字体颜色 */
+    font-size: 16px; /* 字体大小 */
+    line-height: 1.5; /* 行高 */
 }
 
-/* `a{}` 和 `a:hover` */
-a {
-    text-decoration: none;
-    color: black;
-}
-a:hover {
-    color: blueviolet;
+/* 设置容器样式 */
+.container {
+    width: 80%; /* 容器宽度 */
+    margin: 0 auto; /* 自动外边距（水平居中） */
+    padding: 20px; /* 内边距 */
+    border: 2px solid black; /* 边框 */
 }
 ```
 
 
 
-<br/>
+### 背景颜色和图片
+
+| 属性                    | 作用                        | （常用）值                                   |
+| --------------------- | :---------------------- | :--------------------------------------- |
+| `background-color`    | 背景颜色                   | 预定义的颜色值 / 十六进制 / RGB / RGBA   |
+| `background-image`    | 背景图片                   | `url(图片路径)`                          |
+| `background-repeat`   | 是否平铺 (复用)              | `repeat` / `no-repeat` / `repeat-x` / `repeat-y` |
+| `background-position` | 背景图片位置的起始位置           | `length` / `position`                   |
+| `background-attachment` | 背景固定还是滚动            | `scroll` / `fixed`                       |
+| `background`           | 综合简写                    | `color url(图片路径) repeat attachment position;` |
+
+注: **background-position**  必须先指定`background-image`属性，常用于背景图片居中对齐。
+
+#### `background-position` 详细讲解
+- `position`语法：`background-position: <horizontal> <vertical>;`
+- 值可以是长度单位 (如 `px`, `em`), 或者方位名词 (如 `left`, `center`, `right`, `top`, `bottom`)
+
+**示例解释**：
+   ```css
+   background-position: right top;       /* 背景图片右上角对齐容器右上角 */
+   background-position: center center;   /* 背景图片居中对齐 */
+   background-position: right;           /* 背景图片水平靠右，垂直居中 */
+   background-position: 10px 50px;       /* 背景图片从容器左上角 10px 右移, 50px 下移 */
+   background-position: 10px;            /* 背景图片从容器左上角 10px 右移，垂直居中 */
+   background-position: right 20px;      /* 背景图片水平靠右，垂直移动 20px */
+   ```
+```css
+/*--- 背景颜色样式示例 ---*/
+
+/* 背景颜色设置 */
+.bg-color-example {
+    background-color: #00aaff; /* 十六进制颜色 */
+}
+
+/* 背景图片设置 */
+.bg-image-example {
+    background-image: url('background.jpg'); /* 背景图片 */
+    background-repeat: no-repeat;   /* 不重复背景图片 */
+    background-position: center center; /* 背景图片居中 */
+    background-attachment: fixed;   /* 背景图片固定不滚动 */
+}
+
+/* 背景透明设置 */
+.bg-transparent-example {
+    background: rgba(166, 166, 255, 0.1); /* 将背景颜色设为半透明 */
+}
+
+/* 背景简写示例 */
+.bg-shortcut-example {
+    background: #00aaff url('background.jpg') no-repeat fixed center; /* 背景简写 */
+    /* 同时使用背景颜色和背景图像时，背景颜色会在图片后面显示，图片加载完成后覆盖在颜色之上。 */
+}
+```
 
 
 
-### 3. CSS文本样式
+### 文本和字体样式
 
-| 文本属性        | 表示     | 注意点                                                       |
-| :-------------- | :------- | :----------------------------------------------------------- |
-| color           | 颜色     | 预定义的颜色值/十六进制/RGB代码（常用  十六进制，比如: #fff ） |
-| line-height     | 行高     | 控制行与行之间的距离                                         |
-| text-align      | 水平对齐 | 可以设定文字水平的对齐方式 （left、center、right）           |
-| text-indent     | 首行缩进 | 通常我们用于段落首行缩进2个字的距离   `text-indent: 2em;`    |
-| text-decoration | 文本修饰 | 添加下划线  underline  、取消下划线  none                    |
+#### 文本属性
 
-<br/>
-
-| 字体属性    | 表示     | 注意点                                                       |
-| :---------- | :------- | :----------------------------------------------------------- |
-| font-size   | 字号     | 我们通常用的单位是px 像素，一定要跟上单位                    |
-| font-family | 字体     | 可以一次设置多个字体、如果浏览器不支持第一个字体，则会尝试下一个 |
-| font-weight | 字体粗细 | 加粗是 700 或者 bold、  不加粗是 normal 或者 400 （数字不要跟单位） |
-| font-style  | 字体样式 | 倾斜是 italic、不倾斜是 normal（工作中我们最常用 normal ）   |
-| font        | 字体连写 | 1. 字体连写是有顺序的  不能随意换位置   2. 其中字号 和 字体 必须同时出现 |
-
-
-
-<br/>
-
-
-
-### 4. Background
-
-|         属性          | 作用            | （常用）值                                                                              |
-| --------------------- | :------------- | :---------------------------------------------------------------------------------- |
-| background-color      | 背景颜色         | 预定义的颜色值/十六进制/RGB代码                                                       |
-| background-image      | 背景图片         | url(图片路径)                                                                       |
-| background-repeat     | 是否平铺（复用）     | repeat / no-repeat / repeat-x / repeat-y                                            |
-| background-position   | 背景图片位置的起始位置 | length / position    分别是x  和 y坐标 |
-| background-attachment | 背景固定还是滚动 | scroll / fixed                                                                      |
-| background    | 更简单          | `color iamgeurl repeat attachment position;` (没有顺序) |
-
-
-
-注：**background-position** — 必须先指定background-image属性、用的最多的就是背景图片居中对齐
-
+| 文本属性        | 表示     | 注意点                                                                                 |
+| :-------------- | :------- | :----------------------------------------------------------------------------------- |
+| `color`         | 颜色     | 预定义的颜色值 / 十六进制 / RGB代码（常用十六进制，比如: `#fff`）                          |
+| `line-height`   | 行高     | 控制行与行之间的距离，通常以数字、百分比或长度单位表示                                   |
+| `text-align`    | 水平对齐 | 可以设定文字水平的对齐方式（`left`、`center`、`right`、`justify`）                      |
+| `text-indent`   | 首行缩进 | 通常用于段落首行缩进，单位常用`em`（如 `text-indent: 2em;`）                          |
+| `text-decoration` | 文本修饰 | 添加下划线 `underline` 、取消下划线 `none`，还可以设置`overline`和`line-through`等文本修饰 |
+| `text-transform` | 文本转换 | 控制文本转换为大写或小写 (`uppercase`、`lowercase`、`capitalize`)                    |
 
 
 ```css
-background-position : length || length  和 background-position : position || position 
-
- /*-- 如果指定两个值，两个值都是方位名字，则两个值前后顺序无关，比如left  top和top  left效果一致--*/
-background-position : right top;     /*--背景图片右上角与容器 右上角 重合 */
-background-position : center center; /*-- 居中对齐 --*/
-background-position : right;         /* 如果只指定了一个方位名词，另一个值默认居中对齐。*/
-
-background-position : 10px 50px;     /* 如果position 后面是精确坐标， 那么第一个肯定是 x  第二的一定是y */
-background-position : 10px;          /* 如果只指定一个数值,那该数值一定是x坐标，另一个默认垂直居中 */
-
-/* 如果指定的两个值是 精确单位和方位名字混合使用，则第一个值是x坐标，第二个值是y坐标*/
-background-position : right 20px;    
+/* 文本样式示例 */
+.text-style-example {
+    color: #333;          /* 十六进制颜色 */
+    line-height: 1.5;     /* 行高 */
+    text-align: justify;  /* 水平对齐方式 */
+    text-indent: 2em;     /* 首行缩进 */
+    text-decoration: underline;   /* 下划线 */
+    text-transform: capitalize;   /* 首字母大写 */
+}
 ```
 
+#### 字体属性
 
+| 字体属性    | 表示     | 注意点                                                                   |
+| :---------- | :------- | :--------------------------------------------------------------------- |
+| `font-size` | 字号     | 我们通常用的单位是`px` (像素)，必须跟上单位                               |
+| `font-family` | 字体     | 可以一次设置多个字体，浏览器不支持第一个字体，则会尝试下一个；字体名如果包含空格需加引号    |
+| `font-weight` | 字体粗细 | 加粗是 `700` 或者 `bold`，不加粗是 `normal` 或者 `400` (数字不要加单位)   |
+| `font-style`  | 字体样式 | 倾斜是 `italic`，不倾斜是 `normal`（工作中最常用 `normal`）                |
+| `font`        | 字体连写 | 1. 字体连写是有顺序的不能随意换位置，2. 其中字号和字体必须同时出现               |
 
 ```css
-/* 背景透明设置（让盒子半透明） */
-background: rgba(166, 166, 255, 0.1);
+/* 字体样式示例 */
+.font-style-example {
+    font-size: 16px;                   /* 字号 */
+    font-family: "Arial", sans-serif;  /* 字体 */
+    font-weight: bold;                 /* 字体粗细 */
+    font-style: normal;                /* 字体样式 */
+}
+
+/* 字体连写示例 */
+.font-shorthand-example {
+    font: italic bold 16px/1.5 "Arial", sans-serif;  /* 字体连写 */
+}
 ```
 
-<br/>
+::: info 文本居中实现方式
+- **水平居中**：常用`text-align: center;`，也可使用Flexbox和Grid布局。
+- **垂直居中**：方法较多，常用方法包括行高法、Table-cell法、Flexbox、Grid布局和绝对定位法。
+
+### 水平居中
+
+#### 1. 使用 `text-align`
+
+`text-align:center;` 是文本水平居中的最常用方法，适用于块级元素中的文本。
+
+```css
+.horizontal-center {
+    text-align: center;
+}
+```
+
+```html
+<div class="horizontal-center">
+    <p>这是水平居中的文本。</p>
+</div>
+```
+
+#### 2. 使用 Flexbox
+
+Flexbox 是一个强大的布局工具，也可以用于实现文本的水平居中。
+
+```css
+.flex-horizontal-center {
+    display: flex;
+    justify-content: center;
+}
+```
+
+```html
+<div class="flex-horizontal-center">
+    <p>这是使用Flexbox实现水平居中的文本。</p>
+</div>
+```
+
+### 垂直居中
+
+垂直居中通常比水平居中稍复杂，有几种常用的方法：
+
+#### 1. 行高（Line Height）法
+
+这种方法适用于单行文本，通过将行高设置为元素的高度来实现。
+
+```css
+.line-height-center {
+    height: 100px;
+    line-height: 100px; /* 行高等于元素高度 */
+    text-align: center; /* 可选，为了水平居中 */
+}
+```
+
+```html
+<div class="line-height-center">
+    <p>这是使用行高实现垂直居中的文本。</p>
+</div>
+```
+
+#### 2. Table-cell 法
+
+这个方法将父元素的 `display` 属性设为 `table`，将子元素的 `display` 属性设为 `table-cell`，然后使用 `vertical-align` 属性。
+
+```css
+.table-cell-center {
+    display: table;
+    height: 100px;
+    width: 100%;
+}
+
+.table-cell-center p {
+    display: table-cell;
+    vertical-align: middle;
+    text-align: center; /* 可选，为了水平居中 */
+}
+```
+
+```html
+<div class="table-cell-center">
+    <p>这是使用Table-cell实现垂直居中的文本。</p>
+</div>
+```
+
+#### 3. Flexbox 法
+
+Flexbox 是实现垂直居中的强大方法之一。除了水平居中外，还可以实现垂直居中。
+
+```css
+.flex-center {
+    display: flex;
+    justify-content: center; /* 水平居中 */
+    align-items: center;     /* 垂直居中 */
+    height: 100px;
+}
+```
+
+```html
+<div class="flex-center">
+    <p>这是使用Flexbox实现水平和垂直居中的文本。</p>
+</div>
+```
+
+:::
 
 
+### Display属性
 
-## 二 CSS核心
-
-### 1. display
 HTML标签一般分为块标签和行内标签两种类型，它们也称块元素和行内元素。
-
 |  元素模式  |       元素排列       |       设置样式       |    默认宽度     |          包含          |
 | --------- | -------------------- | -------------------- | -------------- | --------------------- |
 | 块级元素   | 一行只能放一个块级元素 | 可以设置宽度高度       | 容器的100%      | 容器级可以包含任何标签   |
 | 行内元素   | 一行可以放多个行内元素 | 不可以直接设置宽度高度 | 它本身内容的宽度 | 容纳文本或则其他行内元素 |
 | 行内块元素 | 一行放多个行内块元素   | 可以设置宽度和高度     | 它本身内容的宽度 |                       |
 
-
-
-**（1）块级元素(block-level)**：
-
-​	常见的块元素有`<h1>~<h6>、<p>、<div>、<ul>、<ol>、<li>`等，其中`<div>`标签是最典型的块元素。
-
-- 注意：只有 文字才 能组成段落  因此 p  里面不能放块级元素，特别是 p 不能放div 、同理还有这些标签`h1, h2, h3, h4, h5, h6, dt`，他们都是文字类块级标签，里面不能放其他块级元素。
-
-  <br/>
-
-**（2）行内元素(inline-level)**：
-
-​	常见的行内元素有`<a>、<strong>、<b>、<em>、<i>、<del>、<s>、<ins>、<u>、<span>`等，其中`<span>`标签最典型的行内元素。
-
-​	有的地方也成内联元素
-
-- 注意：链接里面不能再放链接、特殊情况a里面可以放块级元素，但是给a转换一下块级模式最安全。
-
-  <br/>
-
-**（3）行内块元素（inline-block）** 
-
-​	在行内元素中有几个特殊的标签——`<img />、<input />、<td>`，可以对它们设置宽高和对齐属性
-
-<br/>
-
-**（4）标签显示模式转换 display** ： 
-
-- 块转行内：`display:inline;` 
-- 行内转块：`display:block; ` 
-- 块、行内元素转换为行内块： `display: inline-block;` 
-
-<br/>
+::: info Display属性
+`display` 属性用于定义元素的显示类型，它决定了元素在页面中的布局方式。常见的显示类型有：
+- **block**：块级元素，占据父元素的全部宽度。
+  常见的块元素有`<h1>~<h6>、<p>、<div>、<ul>、<ol>、<li>`等，其中`<div>`标签是最典型的块元素。
+- **inline**：内联元素，不会换行，只占据自身所需宽度。
+  常见的行内元素有`<a>、<strong>、<b>、<em>、<i>、<span>`等，其中`<span>`标签最典型的行内元素。
+- **inline-block**：内联块级元素，像内联元素那样排列，但其内容表现为块级。
+  在行内元素中有几个特殊的标签——`<img />、<input />、<td>`，可以对它们设置宽高和对齐属性
+- **none**：隐藏元素，不占空间。
+- **flex** 和 **grid**：带有布局功能的复杂显示模式。
+:::
 
 
 
-### 2. 盒模型
+## CSS选择器及权重
 
-盒模型：外边距（margin）、边框（border）、内边距（padding）和内容部分
+### 基础选择器
 
+基础选择器（Basic Selectors）：
 
-margin、padding 值的个数对应上下左右：
-
-| 值的个数 | 表达意思                                                  |
-| -------- | --------------------------------------------------------- |
-| 1个值    | 上、下、左、右 （全部）                                   |
-| 2个值    | 第一个值上下、第二值左右                                  |
-| 3个值    | 第一个值上、第二值左右、第三个值下                        |
-| 4个值    | 第一个值上、第二值右、第三个值下、第四个值左 （上右下走） |
+- **通配符选择器（Universal Selector）**：选择所有元素（`*`）。
+- **类型选择器（Type Selector）**：也称为元素（标签）选择器，选择所有某一类型的元素（如`p`、`div`）。
+- **类选择器（Class Selector）**：选择特定类名的所有元素（如`.classname`）。
+- **ID选择器（ID Selector）**：选择特定ID的所有元素（如`#idname`）。
+- **属性选择器（Attribute Selector）**：选择具有特定属性的元素（如`[type="text"]`）。
 
 ```css
-margin: 10px 0 0 20px; /* 上右下左分别为： 10px 0 0 20px */
-padding: 20px 10px;    /* 上右下左分别为： 20px 10px 20px 10px */
+/* 通配符选择器：设置所有元素的字体 */
+* {
+    font-family: Arial, sans-serif;
+}
+
+/* 类型选择器(元素/标签选择器)：设置所有p元素的颜色 */
+p {
+    color: blue;
+}
+
+/* 类选择器：设置类名为example的元素的背景颜色 */
+.example {
+    background-color: yellow;
+}
+
+/* ID选择器：设置ID为header的元素的高度 */
+#header {
+    height: 100px;
+}
+
+/* 属性选择器：设置所有type属性值为text的input元素的宽度 */
+input[type="text"] {
+    width: 200px;
+}
 ```
 
-<br/>
+### 复合选择器
 
-相关问题——**块元素的水平居中、外边距合并问题**： 
+复合选择器（Compound Selectors）：
+- **后代选择器（Descendant Selector）**：如选择div中的所有p元素（`div p`）。
+- **子选择器（Child Selector）**：如选择div中的直接子元素p（`div > p`）。
+- **相邻兄弟选择器（Adjacent Sibling Selector）**：如选择紧接在h1之后的p元素（`h1 + p`）。
+- **通用兄弟选择器（General Sibling Selector）**：如选择h1之后的所有p元素（`h1 ~ p`）。
+- **交集选择器 (Intersection Selector)**：如选择同时具有class1和class2的元素（`.class1.class2`）
+- **并集选择器 (Union Selector)**：如选择所有具有class1或class2类的元素（`.class1, .class2`）
+- **链接伪类选择器 (Link Pseudo-classes)**：用于匹配链接的不同状态
 
-
-**解决方案：** 
-
-1. 可以为父元素定义上边框
-2. 可以为父元素定义上内边距
-3. 可以为父元素添加`overflow:hidden`、还有其他方法，比如浮动、固定、绝对定位的盒子不会有此问题。
-
-<br/>
-
-注意：优先使用宽度 （width）、其次使用内边距（padding）、最后再考虑使用外边距（margin）、因为：
-
-- margin 会有外边距合并 还有 ie6下面margin 加倍的bug、所以最后使用
-- padding  会影响盒子大小， 需要进行加减计算（麻烦） 其次使用
-- width   没有问题、我们经常使用宽度剩余法、 高度剩余法来做
-
-<br/>
-
-
-
-### 3. 盒子边框
-
-**边框(border)** ： 
-
-~~~css
-/* border : border-width || border-style || border-color   没有顺序，如： */
-border: 1px solid red; 
-~~~
-
-|     属性     |                                                  作用                                                   |
-| ------------ | :------------------------------------------------------------------------------------------------------ |
-| border-width |                                          定义边框粗细，单位是px                                           |
-| border-style | -none：没有边框（默认值） <br />-solid：边框为单实线(最为常用的)  <br />-dashed：边框为虚线 <br />-dotted：边框为点线 |
-| border-color |                                                 边框颜色                                                 |
-
-<br/>
-
-**圆角及阴影**： 
+#### 后代选择器 (Descendant Selector)
+选择某元素后代中的特定元素。它可以匹配目标元素的所有后代元素。
 
 ```css
-/* 圆角：border-radius:length; */
-
-border-radius: 50%;  /* 矩形会变成椭圆，正方形变成圆*/
+/* 选择div中的所有p元素 */
+div p {
+    color: red;
+}
 ```
 
-~~~css
-/* 阴影： box-shadow: 水平阴影 垂直阴影 模糊距离（虚实）  阴影尺寸（影子大小）  阴影颜色  内/外阴影；*/
-div {
-    /* box-shadow: 5px 5px 3px 4px rgba(0, 0, 0, .4);  */
-    box-shadow: 0 15px 30px  rgba(0, 0, 0, 0.4);		
-}
-~~~
+#### 子选择器 (Child Selector)
+选择某元素子代中的特定元素。它只匹配目标元素的直接子元素。
 
-<br/>
-
-
-
-### 3. 浮动(float)
-
-使用浮动的核心目的——**让多个块级盒子在同一行显示**。 这也是我们最常见的一种布局方式
-- 加了浮动的盒子是浮起来的，漂浮在其他标准流盒子的上面。
-- 加了浮动的盒子是不占位置的，它原来的位置给了标准流的盒子。
-- 浮动元素会改变display属性， 类似转换为了行内块，但是元素之间没有空白缝隙
-
-<br/>
-
-- 浮动是脱标的，会影响下面的标准流元素，此时，我们需要给浮动的元素添加一个标准流的父亲，这样，最大化的减小了对其他标准流的影响。
-
-- 子盒子的浮动参照父盒子对齐，不会与父盒子的边框重叠，也不会超过父盒子的内边距
-
-- 在一个父级盒子中，如果前一个兄弟盒子是：浮动的，那么当前盒子会与前一个盒子的顶部对齐；普通流的，那么当前盒子会显示在前一个兄弟盒子的下方。
-
-- 如果一个盒子里面有多个子盒子，如果其中一个盒子浮动了，其他兄弟也应该浮动。防止引起问题
-
-  <br/>
-
-
-**清除浮动** ： 
-
-- 父级盒子很多情况下，有时不方便给高度，但是子盒子浮动就不占有位置，最后父级盒子高度为0，就影响了下面的标准流盒子。
-- 清除浮动主要为了解决父级元素因为子级浮动引起内部高度为0 的问题。清除浮动之后， 父级就会根据浮动的子盒子自动检测高度。父级有了高度，就不会影响下面的标准流了
 ```css
-.clearfix:before,.clearfix:after { 
-  content:"";
-  display:table; 
-}
-.clearfix:after {
- clear:both;
-}
-.clearfix {
-  *zoom:1;
+/* 选择div中的直接子元素p */
+div > p {
+    color: green;
 }
 ```
-<br/>
 
-**什么时候用清除浮动？**
+#### 相邻兄弟选择器 (Adjacent Sibling Selector)
+选择紧接在某元素后的第一个兄弟元素。
 
-1. 父级没高度
-2. 子盒子浮动了
-3. 影响下面布局了，我们就应该清除浮动了。
+```css
+/* 选择紧接在h1之后的p元素 */
+h1 + p {
+    font-weight: bold;
+}
+```
 
-|    清除浮动的方式     | 优点             | 缺点                            |
-| -------------------- | :--------------- | :------------------------------ |
-| 额外标签法（隔墙法）   | 通俗易懂，书写方便 | 添加许多无意义的标签，结构化较差。 |
-| 父级overflow:hidden; | 书写简单          | 溢出隐藏                        |
-| 父级after伪元素      | 结构语义化正确     | 由于IE6-7不支持:after，兼容性问题 |
-| 父级双伪元素         | 结构语义化正确     | 由于IE6-7不支持:after，兼容性问题 |
+#### 通用兄弟选择器 (General Sibling Selector)
+选择某元素之后的所有兄弟元素。
 
-<br/>
-
-
-
-### 4. position
-
-|     定位模式     |   是否脱标占有位置   | 移动位置基准          | 模式转换（行内块） |        使用情况        |
-| ---------------- | ------------------ | :------------------- | ---------------- | --------------------- |
-| 静态static       | 不脱标，正常模式     | 正常模式             | 不能             | 几乎不用               |
-| 相对定位relative | 不脱标，占有位置     | 相对自身位置移动       | 不能             | 基本单独使用            |
-| 绝对定位absolute | 完全脱标，不占有位置 | 相对于定位父级移动位置 | 能               | 要和定位父级元素搭配使用 |
-| 固定定位fixed    | 完全脱标，不占有位置 | 相对于浏览器移动位置   | 能               | 单独使用，不需要父级     |
-
-> **相对定位**的特点：（务必记住）
-> - 相对于 自己原来在标准流中位置来移动的
-> - 原来**在标准流的区域继续占有**，后面的盒子仍然以标准流的方式对待它。
-
-&nbsp;<br/>
-
-> **绝对定位**的特点：（务必记住）
-> - 绝对是以带有定位的父级元素来移动位置 （拼爹型） 如果父级都没有定位，则以浏览器文档为准移动位置
-> - 不保留原来的位置，完全是脱标的。
-> - 因为绝对定位的盒子是拼爹的，所以要和父级搭配一起来使用。
-> - 定位口诀 —— **子绝父相** —— **子级**是**绝对**定位，**父级**要用**相对**定位。
-
-<br/>
-
-> **固定定位**是**绝对定位**的一种特殊形式： （认死理型）   如果说绝对定位是一个矩形 那么 固定定位就类似于正方形
-> 1. **完全脱标** —— 完全不占位置；
-> 2. 只认**浏览器的可视窗口** —— `浏览器可视窗口 + 边偏移属性` 来设置元素的位置；
->    * 跟父元素没有任何关系；单独使用的
->    * 不随滚动条滚动。
+```css
+/* 选择h1之后的所有p元素 */
+h1 ~ p {
+    font-style: italic;
+}
+```
 
 
-<br/>
+#### 交集选择器 (Intersection Selector)
+选择同时满足多个条件的元素。即一个元素需同时匹配多个选择器。
 
-**绝对定位的盒子居中**： 
+```css
+/* 选择同时具有class1和class2的元素 */
+.class1.class2 {
+    background-color: yellow;
+}
+```
 
-> **注意**：**绝对定位/固定定位的盒子**不能通过设置 `margin: auto` 设置**水平居中**。在使用**绝对定位**时要想实现水平居中，可以参照下图的方法：
-1. `left: 50%;`：让**盒子的左侧**移动到**父级元素的水平中心位置**；
-2. `margin-left: -100px;`：让盒子**向左**移动**自身宽度的一半**。
+```html
+<div class="class1 class2">交集选择器示例</div>
+<div class="class1">这不是交集选择器示例</div>
+```
 
+#### 并集选择器 (Union Selector)
+选择满足任意一个条件的元素。即匹配多个选择器中的任意一个选择器。
 
-<br/>
+```css
+/* 选择所有具有class1或class2类的元素 */
+.class1, .class2 {
+    border: 1px solid black;
+}
+```
 
-`z-index` 的特性如下：
+```html
+<div class="class1">并集选择器示例1</div>
+<div class="class2">并集选择器示例2</div>
+```
 
-1. **属性值**：**正整数**、**负整数**或 **0**，默认值是 0，数值越大，盒子越靠上；
-2. 如果**属性值相同**，则按照书写顺序，**后来居上**；
-3. **数字后面不能加单位**。
-**注意**：`z-index` 只能应用于**相对定位**、**绝对定位**和**固定定位**的元素，其他**标准流**、**浮动**和**静态定位**无效。
+#### 链接伪类选择器 (Link Pseudo-classes)
+专用于链接的伪类选择器，用于控制链接的不同状态。
 
-**改变显示模式**有以下方式:
-* 可以用 inline-block  转换为行内块
-* 可以用浮动 float 默认转换为行内块（类似，并不完全一样，因为浮动是脱标的）
-* 绝对定位和固定定位也和浮动类似， 默认转换的特性 转换为行内块。
-所以说， 一个行内的盒子，如果加了**浮动**、**固定定位**和**绝对定位**，不用转换，就可以给这个盒子直接设置宽度和高度等。
-**同时注意：**
-浮动元素、绝对定位(固定定位）元素的都不会触发外边距合并的问题。 （我们以前是用padding border overflow解决的）
-也就是说，我们给盒子改为了浮动或者定位，就不会有垂直外边距合并的问题了。
+- `:link`：尚未访问的链接。
+- `:visited`：已访问的链接。
+- `:hover`：鼠标悬停在链接上时。
+- `:active`：点击激活的链接。
 
-<br/>
+```css
+/* 尚未访问的链接 */
+a:link {
+    color: blue;
+}
 
+/* 已访问的链接 */
+a:visited {
+    color: purple;
+}
 
+/* 鼠标悬停在链接上 */
+a:hover {
+    color: red;
+}
 
-### 5. 权重计算
+/* 点击激活的链接 */
+a:active {
+    color: green;
+}
+```
 
-| CSS三大特性 | 说明                                                         |
-| ----------- | ------------------------------------------------------------ |
-| 层叠性      | 一个属性通过两个相同选择器设置到同一个元素上（样式冲突），那么其中一个属性就会被另一个属性 <br />层叠掉（覆盖）、样式冲突遵循的是就近原则、 哪个样式近就执行那个样式，样式不冲突，不会层叠 |
-| 继承性      | 子标签会继承父标签的某些样式（**text-，font-，line-这些开头的、以及color属性可以继承**） |
-| 优先级      | 定义CSS样式时，经常出现两个或更多规则应用在同一元素上，此时若选择器相同，则执行层叠性、<br />若选择器不同，就会出现优先级的问题 |
-
-**权重计算公式**： CSS Specificity（特殊性）
-
-| 标签选择器         | 计算权重公式   |
-| ------------------ | -------------- |
-| 继承或者 *         | `0, 0, 0, 0`   |
-| 标签选择器         | `0, 0, 0, 1`   |
-| 类（伪类）选择器   | `0, 0, 1, 0`   |
-| ID选择器           | `0, 1, 0, 0`   |
-| 行内样式 style=""  | `1, 0, 0, 0`   |
-| !important  重要的 | `∞ `（无穷大） |
-
-- 值从左到右，左面的最大，一级大于一级，数位之间没有进制，级别之间不可超越。 
-
-<br/>
-
-**权重叠加**： 
-我们经常用交集选择器，后代选择器等，是有多个基础选择器组合而成，那么此时，就会出现权重叠加。就是一个简单的加法计算
-
-- div ul  li   ------>      0,0,0,3
-- .nav ul li   ------>      0,0,1,2
-- a:hover      -----—>   0,0,1,1
-- .nav a       ------>      0,0,1,1
-
-- 注意： 数位之间没有进制 比如说： 0,0,0,5 + 0,0,0,5 =0,0,0,10 而不是 0,0, 1, 0， 所以不会存在10个div能赶上一个类选择器的情况。
-
-<br/>
-
-**继承的权重是0**： 
-这个不难，但是忽略很容易绕晕。其实，我们修改样式，一定要看该标签有没有被选中。
-1） 如果选中了，那么以上面的公式来计权重。谁大听谁的。 
-2） 如果没有选中，那么权重是0，因为继承的权重为0.
-
-<br/>
+```html
+<a href="https://www.example.com" target="_blank">示例链接</a>
+```
 
 
 
-## 三 高级技巧
-### 1. 显示与隐藏
+### 选择器权重计算
+
+| CSS三大特性      | 说明                                                         |
+|-----------|------------------------------------------------------------|
+| 层叠性    | 一个属性通过两个相同选择器设置到同一个元素上（样式冲突），那么其中一个属性就会被另一个属性层叠掉（覆盖）。样式冲突遵循就近原则，即哪个样式近就执行哪个样式。如果样式不冲突，不会层叠。 |
+| 继承性    | 子标签会继承父标签的某些样式（例如，`text-`、`font-`、`line-`这些开头的属性以及`color`属性可以继承）。 |
+| 优先级    | 定义CSS样式时，经常出现两个或更多规则应用在同一元素上，此时若选择器相同，则执行层叠性；若选择器不同，就会出现优先级的问题。 |
+
+::: info CSS权重计算公式
+CSS Specificity（特殊性）的计算直接影响样式的最终应用。
+
+| 选择器                 | 权重公式       |
+|------------------------|----------------|
+| 继承选择器或全局选择器 `*`  | `0, 0, 0, 0`   |
+| 元素（标签）选择器     | `0, 0, 0, 1`   |
+| 类选择器、伪类选择器(如`.class1`, `:hover` 等)   | `0, 0, 1, 0`   |
+| 属性选择器             | `0, 0, 1, 0`   |
+| ID 选择器              | `0, 1, 0, 0`   |
+| 行内样式 `style=""`    | `1, 0, 0, 0`   |
+| `!important`             | `∞`（无穷大）<br/>  行内样式的 `!important` 权重最高  |
+
+- 权重值从左到右依次递减，左边的数值更大，权重更高。
+- 权重级别之间不可超越，不存在进位。
+:::
+
+多个基础选择器组合使用时，权重会叠加:
+
+```css
+/* 后代选择器 */
+div ul li {
+    color: blue;   /* 权重为 0, 0, 0, 3 */
+}
+
+/* 类选择器与后代选择器的组合 */
+.nav ul li {
+    border: 1px solid black; /* 权重为 0, 0, 1, 2 */
+}
+
+/* 伪类选择器 */
+a:hover {
+    text-decoration: underline; /* 权重为 0, 0, 1, 1 */
+}
+
+/* 类选择器与标签选择器 */
+.nav a {
+    color: red; /* 权重为 0, 0, 1, 1 */
+}
+```
+
+- 注意：数位之间没有进制关系，例如：`0, 0, 0, 5 + 0, 0, 0, 5 = 0, 0, 0, 10` 而不是 `0, 0, 1, 0`，不会存在10个 div 元素选择器的权重能超越一个类选择器权重的情况。
+
+
+::: tip 继承的权重为0
+对于继承自父元素的样式，其权重为0。
+- 如果某标签的样式是通过选择器直接应用的，则需要按照上述权重公式计算。
+- 如果某标签的样式是继承来的（未被任何选择器直接选中），其权重为0。
+:::
+
+**总结**：
+- **层叠性**决定了同一选择器多次应用时，靠近元素的样式会覆盖之前的样式。
+- **继承性**指某些特定属性可以从父元素继承给子元素，但继承的权重为0。
+- **优先级**依靠权重计算公式，较高权重的选择器将覆盖较低权重的选择器。
+
+
+
+
+## 盒模型(Box Model)
+
+### CSS盒模型
+CSS 盒模型描述了一个元素及其内容、内边距（padding）、边框（border）和外边距（margin）如何组合在一起。盒模型的组成部分主要包括：
+- **Content（内容）**：元素的实际内容（文本、图像等）。
+- **Padding（内边距）**：围绕内容的空白区域。
+- **Border（边框）**：围绕内边距（如果有）的边框。
+- **Margin（外边距）**：最外层的外边距，围绕边框。
+
+
+<img src="https://www.runoob.com/images/box-model.gif">
+
+
+### Margin/Padding
+
+#### 内边距（Padding）
+
+内边距（Padding）控制的是元素内容与其边框（Border）之间的距离。
+
+1. **单边属性写法**
+   - `padding-top`: 设置顶部内边距
+   - `padding-right`: 设置右侧内边距
+   - `padding-bottom`: 设置底部内边距
+   - `padding-left`: 设置左侧内边距
+
+   示例：
+   ```css
+   .example-padding {
+       padding-top: 10px;
+       padding-right: 15px;
+       padding-bottom: 20px;
+       padding-left: 25px;
+   }
+   ```
+
+2. **简写形式**
+   通过单行设置全部内边距，简写形式如下：
+   ```css
+   .example-padding {
+       padding: top right bottom left; /* 顺序依次为 上 右 下 左 */
+   }
+   ```
+   具体简写规则：
+   - **4个值**：上，右，下，左
+   - **3个值**：上，左右，下
+   - **2个值**：上下，左右
+   - **1个值**：所有方向相同
+
+   示例：
+   ```css
+   .example-padding {
+       padding: 10px 15px 20px 25px; /* 上 10px, 右 15px, 下 20px, 左 25px */
+   }
+
+   .example-padding-1 {
+       padding: 10px 15px 20px; /* 上 10px, 左右 15px, 下 20px */
+   }
+
+   .example-padding-2 {
+       padding: 10px 15px; /* 上下 10px, 左右 15px */
+   }
+
+   .example-padding-3 {
+       padding: 10px; /* 四边均为 10px */
+   }
+   ```
+
+
+#### 外边距（Margin）
+
+外边距（Margin）控制的是元素边框（Border）与相邻元素或容器边框之间的距离。
+
+1. **单边属性写法**
+   - `margin-top`: 设置顶部外边距
+   - `margin-right`: 设置右侧外边距
+   - `margin-bottom`: 设置底部外边距
+   - `margin-left`: 设置左侧外边距
+
+   示例：
+   ```css
+   .example-margin {
+       margin-top: 10px;
+       margin-right: 15px;
+       margin-bottom: 20px;
+       margin-left: 25px;
+   }
+   ```
+
+2. **简写形式**
+   通过单行设置全部外边距，简写形式如下：
+   ```css
+   .example-margin {
+       margin: top right bottom left; /* 顺序依次为 上 右 下 左 */
+   }
+   ```
+   具体简写规则：
+   - **4个值**：上，右，下，左
+   - **3个值**：上，左右，下
+   - **2个值**：上下，左右
+   - **1个值**：所有方向相同
+
+   示例：
+   ```css
+   .example-margin {
+       margin: 10px 15px 20px 25px; /* 上 10px, 右 15px, 下 20px, 左 25px */
+   }
+
+   .example-margin-1 {
+       margin: 10px 15px 20px; /* 上 10px, 左右 15px, 下 20px */
+   }
+
+   .example-margin-2 {
+       margin: 10px 15px; /* 上下 10px, 左右 15px */
+   }
+
+   .example-margin-3 {
+       margin: 10px; /* 四边均为 10px */
+   }
+   ```
+
+
+::: tip 注意事项
+1. **重叠外边距（Margin Collapsing）**
+   - 垂直方向的相邻两元素外边距如果相遇，较大的外边距将会“吞掉”较小的那个，而不是叠加。这是为了避免相邻的块元素被两个外边距累加后变得间隔过开。
+     ```css
+     .box1 {
+         margin-bottom: 20px;
+         background-color: lightgrey;
+         height: 50px;
+     }
+     .box2 {
+         margin-top: 30px;
+         background-color: lightpink;
+         height: 50px;
+     }
+     ```
+     ```html
+     <div class="box1">Box 1</div>
+     <div class="box2">Box 2</div>
+     ```
+     实际效果：两段元素之间的间距为较大的外边距，即 30px，而不是 50px。
+
+2. **内边距影响盒子尺寸**
+   - 默认情况下，内边距会增加盒子的总尺寸（宽高），这会导致实际显示的盒子比指定的宽高要大。
+   - 可以使用 `box-sizing: border-box;` 来包括 padding 和 border，在指定的宽高之内。
+     ```css
+     .box {
+         width: 100px;
+         height: 100px;
+         padding: 20px;
+         border: 5px solid black;
+         box-sizing: border-box; /* 包括 padding 和 border */
+     }
+     ```
+
+3. **避免负值的内边距**
+   - 内边距不允许负值，尝试设置负值会导致样式无效。
+   - 外边距可以使用负值来实现元素的部分重叠。
+     ```css
+     .negative-margin {
+         margin-top: -10px; /* 元素向上移动10px，与上一个元素重叠 */
+     }
+     ```
+
+4. **使用百分比内边距与外边距**
+   - 内外边距可以使用百分比值，此时值是相对于包含块（父元素）的宽度来计算。
+     ```css
+     .percentage-padding {
+         padding: 5%; /* 相对于父元素宽度的5% */
+     }
+     ```
+:::
+
+
+
+
+### Border边框
+
+边框用来为元素增加视觉边界。常见属性包括：
+- `border-width`：边框宽度。
+- `border-style`：边框样式（solid、dashed、dotted 等）。
+- `border-color`：边框颜色。
+
+
+#### 边框圆角 (Border Radius)
+`border-radius` 属性用于给元素的边框设置圆角。
+
+```css
+.rounded-box {
+    border: 2px solid #000; /* 黑色实线边框 */
+    border-radius: 10px;    /* 四角圆角半径为10px */
+}
+```
+
+```html
+<div class="rounded-box">这是带圆角边框的盒子</div>
+```
+
+需要注意的是，如果 `border-radius` 设定值过大，也依然会被元素尺寸的边界约束。
+
+#### 边框阴影 (Box Shadow)
+`box-shadow` 属性用于给元素添加阴影效果。
+
+```css
+.shadow-box {
+    border: 1px solid #ccc; /* 灰色边框 */
+    box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.5); /* 阴影 */
+}
+```
+
+```html
+<div class="shadow-box">这是带阴影的盒子</div>
+```
+
+`box-shadow` 参数解析：
+- 第一个值为水平偏移量。
+- 第二个值为垂直偏移量。
+- 第三个值为模糊半径。
+- 第四个值是可选的扩展半径。
+- 颜色值（`rgba` 表示透明度）。
+
+
+
+
+
+
+
+### box-sizing属性
+
+`box-sizing`定义了元素盒模型的计算方式，决定了元素的宽度和高度如何包括边框、内边距以及内容区域。此属性有助于简化布局过程，特别是在处理包含边框和内边距的元素时。
+
+1. **content-box**（默认值）:
+   - **含义**: 元素的宽度和高度只包括内容区域，不包括边框和内边距。增加边框和内边距会导致元素尺寸变大。
+   - **使用场景**: 当你需要遵循传统的W3C盒模型时。
+
+2. **border-box**:
+   - **含义**: 元素的宽度和高度包括内容区域、边框和内边距。设置的宽度和高度固定，不会因边框和内边距而变化。
+   - **使用场景**: 这是进行布局时的推荐选择，因为它让元素尺寸更容易预测，尤其是在响应式设计中
+
+```css
+/* 将所有元素的盒模型设置为border-box */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
+/* 具体元素的定制 */
+.example {
+  width: 300px; /* 宽度包含边框和内边距 */
+  height: 200px; /* 高度包含边框和内边距 */
+  padding: 20px;
+  border: 5px solid #333;
+  box-sizing: border-box;
+}
+```
+
+在上述代码示例中，首先通过通配符选择器`*`将页面上所有元素的`box-sizing`属性设置为`border-box`，这是一种常见的做法，有助于全局统一盒模型计算方式，简化布局工作。随后，定义了一个`.example`类，展示了如何设置一个固定尺寸的盒子，其中宽度和高度包括了边框和内边距，由于使用了`border-box`，即便增加了内边距和边框，该元素的总尺寸仍然保持为300px宽和200px高。
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## CSS应用实践
+### 显示与隐藏
 
 | 属性           | 区别                   | 用途                                                         |
 | -------------- | ---------------------- | ------------------------------------------------------------ |
@@ -481,7 +874,7 @@ text-overflow: ellipsis;     /*3. 文字用省略号替代超出的部分*/
 
 
 
-### 2. 用户界面样式
+### 用户界面样式
 
 |     属性     |        用途         |                          用途                           |
 | ------------ | ------------------ | ------------------------------------------------------- |
@@ -513,99 +906,114 @@ text-overflow: ellipsis;     /*3. 文字用省略号替代超出的部分*/
 
 
 
-### 3. 水平垂直对齐
+### 水平/垂直居中
 
 - 有宽度的块级元素居中对齐，是margin: 0 auto;
 - 让文字居中对齐，是 text-align: center;
-- vertical-align：
+- vertical-align
 
-<br/>
+**水平居中**
 
-**去除图片底侧空白缝隙**  图片或者表单等行内块元素，他的底线会和父级盒子的基线对齐。就是图片底侧会有一个空白缝隙。
-
-**解决方法：**
-
-- 给 img 设置 vertical-align:middle | top| bottom 等等。 让图片不要和基线对齐。
-- 或者给 img 添加 display：block;  转换为块级元素就不会存在问题了。
-
-<br/>
-
-&nbsp;
-
-### 4. CSS精灵技术
-
-CSS精灵技术（sprite)：
-
-> 当用户访问一个网站时，需要向服务器发送请求，网页上的每张图像都要经过一次请求才能展现给用户。然而，一个网页中往往会应用很多小的背景图像作为修饰，当网页中的图像过多时，服务器就会频繁地接受和发送请求，这将大大降低页面的加载速度。为了**有效地减少服务器接受和发送请求的次数**，提高页面的加载速度。出现了CSS精灵技术（也称CSS Sprites、CSS雪碧）。
-CSS 精灵其实是将网页中的一些背景图像整合到一张大图中（精灵图），各个网页元素通常只需要精灵图中不同位置的某个小图，只需要精确定位到精灵图中的某个小图即可。
-
-**精灵技术使用的核心总结** css精灵技术主要针对于背景图片，插入的图片img 是不需要这个技术的。
-- 精确测量，每个小背景图片的大小和 位置。
-- 给盒子指定小背景图片时， 背景定位基本都是 负值。
-
-背景图片很少的情况，没有必要使用精灵技术，维护成本太高。 如果是背景图片比较多，可以建议使用精灵技术。
-
-<br/>
-
-
-
-### 5. CSS滑动门
-
-> 为了使各种特殊形状的背景能够自适应元素中文本内容的多少，出现了CSS滑动门技术。它从新的角度构建页面，使各种特殊形状的背景能够自由拉伸滑动，以适应元素内部的文本内容，可用性更强。 最常见于各种导航栏的滑动门。
-
-
+对于**有固定宽度的块级元素**，使用`margin: 0 auto;`可以让元素在其父容器内水平居中。这种方法依赖于块级元素的宽度是确定的，并且父容器能够提供足够的空间。
 
 ```html
-<li>
-  <a href="#">
-    <span>导航栏内容</span>
-  </a>
-</li>
+<div class="container">
+  <div class="block-element">我是水平居中的块级元素</div>
+</div>
 ```
-~~~css
-* {
-      padding:0;
-      margin:0;
 
-    }
-    body{
-      background: url(images/wx.jpg) repeat-x;
-    }
-    .father {
-      padding-top:20px;
-    }
-    li {
-      padding-left: 16px;
-      height: 33px;
-      float: left;
-      line-height: 33px;
-      margin:0  10px;
-      background: url(./images/to.png) no-repeat left ;
-    }
-    a {
-      padding-right: 16px;
-      height: 33px;
-      display: inline-block;
-      color:#fff;
-      background: url(./images/to.png) no-repeat right ;
-      text-decoration: none;
-    }
-    li:hover,
-     li:hover a {
-      background-image:url(./images/ao.png);
-    }
-~~~
+```css
+.container {
+  width: 100%;
+  text-align: center; /* 用于文本或行内元素的居中，但此处用于辅助理解 */
+}
 
-总结： 
-1. a 设置 背景左侧，padding撑开合适宽度。    
-2. span 设置背景右侧， padding撑开合适宽度 剩下由文字继续撑开宽度。
-3. 之所以a包含span就是因为 整个导航都是可以点击的。
+.block-element {
+  width: 200px;
+  margin: 0 auto;
+  background-color: lightblue;
+  padding: 20px;
+}
+```
 
-<br/>
+**垂直居中**
+
+**文本居中**
+
+对于**文本内容**，使用`text-align: center;`可以让行内文本在父元素中水平居中。
+
+```html
+<div class="text-center">
+  这段文字将在容器中居中显示。
+</div>
+```
+
+```css
+.text-center {
+  text-align: center;
+}
+```
+
+**单行或多行文本块垂直居中**
+
+对于**单个块级元素**的垂直居中，可以结合Flexbox或Grid布局快速实现。
+
+```html
+<div class="flex-container">
+  <div class="flex-item">我是垂直居中的文本。</div>
+</div>
+```
+
+```css
+.flex-container {
+  display: flex;
+  justify-content: center; /* 水平居中 */
+  align-items: center; /* 垂直居中 */
+  height: 100vh; /* 为了演示，设定一个高度 */
+}
+
+.flex-item {
+  /* 不需要特别样式，仅内容即可 */
+}
+```
+
+**图片或行内块元素的垂直对齐**：
+
+对于**图片**或**表单**等**行内块元素**，它们默认与父级容器的基线对齐，可能导致下方出现空白缝隙。
+
+::: info 行内块空白间隙解决方法
+1. **使用`vertical-align`**
+
+```html
+<div class="image-container">
+  <img src="image.jpg" alt="示例图片">
+</div>
+```
+
+```css
+.image-container {
+  line-height: 0; /* 减少基线影响，可选 */
+}
+
+img {
+  vertical-align: middle; /* 或top/bottom等 */
+}
+```
+
+2. **转换为块级元素**
+
+```css
+img {
+  display: block; /* 转换为块级元素，消除空白缝隙 */
+}
+```
+通过上述方法，你可以有效地解决水平和垂直居中问题，以及消除行内块元素下方的空白缝隙。
+:::
 
 
 
-### 6. margin负值
+
+### margin负值
 
 margin负值之美：
 
@@ -618,7 +1026,7 @@ margin负值之美：
 
 
 
-### 7. CSS三角形
+### CSS三角形
 
 ~~~css
  div {
@@ -641,251 +1049,6 @@ margin负值之美：
 4. 为了照顾兼容性 低版本的浏览器，加上 font-size: 0;  line-height: 0;
 
 <br/>
-
-
-
-
-## 三 CSS3
-### 1. 边框背景
-**（1）边框及阴影**
-- border-radius
-- box-shadow
-- border-image
-```css
-div {
-    box-shadow: 10px 10px 5px #888888;  /*向 div 元素添加方框阴影*/
-}
-```
-<br/>
-
-**（2）文本和背景**
-
-- background-size   ——规定背景图片的尺寸
-- background-origin ——规定背景图片的定位区域
-
-- text-shadow —— 可向文本应用阴影。
-- word-wrap —— 允许文本进行换行 - 即使这意味着会对单词进行拆分：
-
-```css
-h1{text-shadow: 5px 5px 5px #FF0000;}  /*向标题添加阴影*/
-p {word-wrap:break-word;}              /*允许对长单词进行拆分，并换行到下一行：*/
-```
-
-<br/>
-
-
-
-### 2. 选择器拓展
-
-**（1）属性选择器**
-```css
-a[href] {color:red;}          /*只对有 href 属性的锚（a 元素）应用样式*/
-a[href][title] {color:red;}   /*将同时有 href 和 title 属性的 HTML 超链接的文本设置为红色*/
-
-planet[moons="1"] {color: red;}  /*只选择 moons 属性值为 1 的 planet 元素*/
-```
-
-<table class="dataintable">
-    <tbody>
-        <tr>
-          <th>类型</th>
-          <th>描述</th>
-        </tr>
-        <tr>
-          <td>[abc^="def"]</td>
-          <td>选择 abc 属性值以 "def" 开头的所有元素</td>
-        </tr>
-        <tr>
-          <td>[abc$="def"]</td>
-          <td>选择 abc 属性值以 "def" 结尾的所有元素</td>
-        </tr>
-        <tr>
-          <td>[abc*="def"]</td>
-          <td>选择 abc 属性值中包含子串 "def" 的所有元素</td>
-        </tr>
-    </tbody>
-</table>
-
-
-
-<br/>
-
-
-
-**（2）结构化伪类选择器**
-
-```css
-ul li:first-child {background-color: #888;}        /*ul下的第一个li*/
-ul li:last-child {background-color: #114488;}      /*ul下的最后一个li*/
-
-ul li:nth-child(6) { background-color: #225511;}   /*ul下的第六个li*/
-
-ul li:nth-child(even) {background-color: red;}     /* ul下顺序为偶数的li  (even  odd奇数) */
-
-ul li:nth-child(2n) {background-color: #c3f433;}   /* 等同于 even */
-ul li:nth-child(2n+1) {background-color: #233433;} /* 等同于 odd */
-ul li:nth-child(n+5) {background-color: #f3f4;}    /*第五个之后的所有li */
-ul li:nth-child(-n+5) {background-color: #e3ee;}   /*第五个之前的所有li */
-```
-```css
-/* 【注意】:nth-child 不区分子元素是否属于同一种类型 故推荐上面的写法，加上子元素的类型*/
-/* 上面的例子中 ul 里面只能写 li 故 :nth-child 和  :nth-of-type 效果一样
-/*  div :nth-child(1){...}   选择 div 下的第 1 个子元素 不区分子元素是否属于同一种类型 */
-<div>
-    <p>段落</p>
-    <span>1   0</span>
-    <span>2   0</span>
-    <span>3   0</span>
-</div>
-
-div :nth-child(1) {background-color: #3e45;} /*选中的是 p 标签*/
-div span:nth-child(1) {background-color: #3e45;} /*无选中的元素*/
-div span:nth-child(2) {background-color: #3e45;} /*选中    <span>2   0</span> */
-
-div span:nth-of-type(1) {background-color: #3e45;} /*选中  <span>1   0</span> (只计指定类型的个数)*/
-/* :first-of-type 和 :last-of-type 同上
-```
-
-<br/>
-
-**（3）伪元素选择器**
-
-```css
-<div>TEST</div> 
-
-div {
-    width: 600px;
-    height: 300px;
-    border: 1px solid #ccc;
-}
-
-div::before {
-    content: "这是before的内容";
-    display: inline-block;
-    width: 166px;
-    height: 66px;
-    background-color: #c333;
-}
-
-div::after {
-    content: "这是after的内容";
-    display: inline-block;
-    width: 166px;
-    height: 66px;
-    background-color: #aaff;
-}
-```
-
-
-
-### 3. 过渡和动画
-```css
-transition: all 1s;    /*过渡*/
-```
-
-**（1）定义和使用**
-
-```css
-/*定义动画*/
-@keyframes toRight {
-    0% {
-        transform: translateX(0px);
-    }
-    100% {
-        transform: translateX(1200px);
-    }
-}
-
-.animation {
-    width: 200px;
-    height: 200px;
-    background-color: #9944ff;
-    animation-name: toRight;  /*调用动画*/
-    animation-duration: 5s;
-}
-```
-
-
-
-### 4. Transform-2D
-
-**（1）移动 translate**
-
-
-```css
-transform: translate(100px, 100px);  /* 分别向下、向右移动100px */
-transform: translate(100px, 0);      /* 向右移动100px  等同于： (Y轴同理)*/
-transform: translateX(100px);
-```
-
-<br/>
-
-**（2）旋转 rotate**
-
-```css
-transform: rotate(135deg);
-/*通过 rotate() 方法，元素顺时针旋转给定的角度。允许负值，元素将逆时针旋转。*/
-/*设置元素转换的中心点：*/
-transform-origin：[ <percentage> | <length> | left | center① | right ]      [ <percentage> | <length> | top | center② | bottom ]
-```
-
-<br/>
-
-**（3）缩放 scale**
-
-```css
-transform: scale(2, 1);  /*左右放大2倍，上下不变*/
-transform: scale(2);     /*整体放大2倍，  只有一个参数时，第二个参数与第一个相同 等同于：*/
-transform: scale(2, 2);
-
-transform: scale(0.5);   /* 整体缩小一半*/
-```
-
-
-**【注意】综合写法：**
-```css
-transform: translate(100px, 100px) rotate(135deg) scale(2, 2);
-```
-
-<br/>
-
-
-
-
-### 5. Transform-3D
-
-**（1）透视和移动**
-```css
-perspective：none | <length> /*none： 不指定透视      <length>： 指定观察者距离「z=0」平面的距离，为元素及其内容应用透视变换。不允许负值 */
-perspective: 500px;
-```
-
-
-
-**（2）3D旋转**
-
-
-
-
-
-## 四 移动Web
-
-
-### 1. flex弹性布局
-
-
-
-
-
-### 2. rem及媒体查询
-
-
-
-
-### 3. Leaner Style Sheets
-
-
-**Easy LESS**插件用来把ess件编译为CSs文件,安装完毕插件,重新加载下 vscode, 只要保存一下Less文件,会自动生成CSS文件。
 
 
 

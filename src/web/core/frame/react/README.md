@@ -1,7 +1,7 @@
 --- 
 
 dir:
-    order: 20
+    order: 10
 index: false
 title: React.js
 

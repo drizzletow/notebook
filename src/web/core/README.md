@@ -3,7 +3,7 @@
 dir:
     order: 10
 index: false
-title: 核心技术及框架
+title: 前端开发框架和工具
 icon: web-dev
 
 ---

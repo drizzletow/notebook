@@ -112,30 +112,50 @@ customElements.define('my-vue-component', defineCustomElement(MyComponent));
 </html>
 ```
 
-### 构建单页面应用
+### 使用脚手架工具
 
-Vue CLI是构建SPA的常用工具，它提供了快速搭建Vue项目的模板和配置。
+`create-vue`和`@vue/cli`都是Vue.js项目创建工具
 
-**实现步骤**：
+- [**`@vue/cli`**](https://cli.vuejs.org/zh/guide/installation.html)是Vue.js官方提供的现代化的命令行工具（Vue CLI），用于快速搭建Vue项目的脚手架。它支持Vue 2和Vue 3的项目创建，并且集成了项目模板选择、配置管理、插件安装等功能。
 
-- 全局安装Vue CLI。
-- 使用Vue CLI创建项目。
-- 开发和配置路由、状态管理等。
-- 编译和运行应用。
-
-**命令行示例**：
-
+::: tabs#Linux
+@tab:active npm
 ```bash
-# 全局安装Vue CLI
 npm install -g @vue/cli
+# npm update -g @vue/cli
 
-# 创建项目
-vue create my-spa-app
+vue create hello-world
+# vue ui   # 以图形化界面创建和管理项目
 
-# 进入项目目录并启动开发服务器
-cd my-spa-app
+cd hello-world
 npm run serve
 ```
+
+
+@tab npx
+```bash
+npx @vue/cli create my-vue-app
+
+cd my-vue-app
+npm run serve
+```
+:::
+早期Vue CLI的包名为`vue-cli`（主要对应Vue CLI 2.x版本），后来改名为`@vue/cli`（Vue CLI 3.x及以上版本），引入了许多改进，包括更好的配置灵活性、Vue UI图形界面、更快的项目初始化速度等
+
+- [**`create-vue`**](https://github.com/vuejs/create-vue) 是针对Vue3的简化创建工具，专为Vue 3项目设计，使用Vite作为默认的构建工具，而非Webpack。
+
+```bash
+npm create vue@latest
+# npm create vue@legacy   # Vue 2 (support IE11)
+
+cd vue-project
+npm install
+npm run format
+npm run dev
+```
+
+
+
 
 ### 全栈/SSR
 

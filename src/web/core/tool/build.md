@@ -1,7 +1,7 @@
 ---
 
 order: 10
-title: 常用构建工具
+title: 常用构建/编译工具
 
 ---
 
@@ -142,3 +142,149 @@ Grunt采用配置优先的方式，通过定义任务和加载插件来自动化
 ::: info 出现时期及流行时期
 Grunt 最初于2012年发布，并在2013-2015年期间被大量使用，是最早的一批前端自动化构建工具。然而，由于配置较为繁琐，随着新一代构建工具（如webpack）的出现，Grunt 的使用率大大降低。
 :::
+
+
+
+## Babel编译器
+
+Babel的官方网站是：[https://babeljs.io](https://babeljs.io)
+
+Babel是一个广泛使用的JavaScript编译器，它使开发者能够使用最新的ECMAScript特性（如ES6、ES7等）编写代码，并将其转换为向后兼容的JavaScript版本，以便在当前的浏览器和环境中执行。这使得开发者能够在不牺牲老旧环境兼容性的前提下，利用新的语言特性和API。
+
+- **语法转换**：将ES6及以后版本的JavaScript语法转换为ES5或更低版本的语法。
+- **源代码转换**：通过插件系统，Babel可以不仅仅是语法转换，还能进行源代码的其他类型转换，例如添加polyfills以支持新的全局对象和方法。
+- **预设(presets)**：一组预配置的插件集合，方便快速启用对特定JavaScript版本的支持，如`@babel/preset-env`用于转换到目标环境支持的JS版本。
+- **插件(plugins)**：用于添加特定功能或转换，例如转换箭头函数、模板字符串等。
+
+
+首先，需要在项目中安装Babel及其相关依赖。如果你使用npm，可以这样做：
+
+```bash
+npm install --save-dev @babel/core @babel/cli @babel/preset-env
+```
+
+接下来，创建一个Babel配置文件（通常是`babel.config.json`或`.babelrc.json`）在项目根目录下，来指定转换规则：
+
+```json
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "browsers": ["> 1%, last 2 versions, not dead"]
+        }
+      }
+    ]
+  ]
+}
+```
+
+这里，`@babel/preset-env`会根据你指定的目标环境自动选择需要的转换。
+
+
+使用Babel CLI转换单个文件：
+
+```bash
+npx babel input.js --out-file output.js
+```
+
+
+::: info 在Webpack中集成Babel
+
+首先，你需要安装Babel相关的依赖包，这通常包括`@babel/core`（Babel的核心）、`babel-loader`（让Babel与webpack协同工作的加载器）以及至少一个预设（preset），比如`@babel/preset-env`，用于转换你的ES6+代码到兼容的ES5版本。在你的项目根目录下，运行以下命令：
+
+```bash
+npm install --save-dev babel-loader @babel/core @babel/preset-env
+```
+
+接下来，你需要在webpack的配置文件（通常是`webpack.config.js`）中添加对`babel-loader`的配置。以下是一个简单的示例：
+
+```javascript
+// webpack.config.js
+const path = require('path');
+
+module.exports = {
+  // 其他配置...
+  module: {
+    rules: [
+      {
+        test: /\.m?js$/, // 匹配.js和.jsx文件，如果你想编译jsx文件，确保也安装了@babel/preset-react
+        exclude: /(node_modules|bower_components)/, // 排除这些目录下的文件
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-env'] // 使用@babel/preset-env预设
+          }
+        }
+      }
+    ]
+  },
+  resolve: {
+    extensions: ['.js', '.jsx'], // 如果你也在编译jsx文件，确保包含这里
+  },
+  // 其他配置...
+};
+```
+
+有时你可能需要在`.babelrc`文件或项目根目录下的`babel.config.js`中进一步配置Babel，尤其是当你需要使用额外的插件或自定义预设时。例如：
+
+::: tabs#babel
+
+@tab:active .babelrc
+```json
+// .babelrc
+{
+  "presets": [
+    [
+      "@babel/preset-env",
+      {
+        "targets": {
+          "browsers": ["> 1%, last 2 versions, not dead"]
+        },
+        "useBuiltIns": "usage", // 根据目标环境按需引入polyfill
+        "corejs": 3 // 指定core-js版本
+      }
+    ]
+  ]
+}
+```
+
+@tab babel.config.js
+```javascript
+// babel.config.js
+module.exports = {
+  presets: [
+    [
+      '@babel/preset-env',
+      {
+        targets: {
+          browsers: [ '> 1%', 'last 2 versions', 'not dead' ],
+        },
+        useBuiltIns: 'usage',
+        corejs: 3,
+      },
+    ],
+  ],
+};
+```
+:::
+
+完成上述步骤后，当你运行webpack构建命令（如`npx webpack`或`npm run build`，具体取决于你的项目设置）时，Babel将会自动对匹配的JavaScript文件进行转换，使其兼容目标环境。
+
+
+
+如果要在Node.js项目中使用ES模块或新特性，可以使用`@babel/register`或`babel-node`：
+
+```bash
+npx babel-node script.js
+```
+
+或在你的脚本头部使用`@babel/register`：
+
+```javascript
+require("@babel/register");
+require("./your-es6-script.js");
+```
+
+Babel是前端开发中不可或缺的工具，它使得开发者能够无缝地采用最新的JavaScript特性，而不必担心浏览器兼容性问题。通过配置和使用Babel，开发者可以专注于编写现代、高效的代码。

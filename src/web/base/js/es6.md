@@ -10,7 +10,7 @@ title: ECMAScript6+
 
 ## 一 ES6+语法改进
 
-[ECMAScript2015~2020语法全解析](http://es.xiecheng.live/)
+参考：[ECMAScript2015~2020语法全解析](http://es.xiecheng.live/)
 
 ### 1 变量及解构赋值
 

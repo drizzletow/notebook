@@ -74,15 +74,9 @@ Generator → main方法 → 直接运行
 
 
 
-### 2. 
 
 
-
-
-
-
-
-### 6. 去除统一前缀
+### 2. 去除统一前缀
 
 Mybatis generator在1.3.6中增加新的属性domainObjectRenamingRule可以去除统一的前缀
 

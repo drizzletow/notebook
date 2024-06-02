@@ -1,9 +1,8 @@
 ---
 
 order: -15
-title:  Ultralytics YOLOv8
+title:  YOLOv8
 shortTitle: yolov8
-icon: yolo
 
 ---
 

@@ -22,51 +22,51 @@ features:
 - title: Git版本控制
   icon: git
   details: 版本控制及相关工具的使用（以git为主）.
-  link: /tool/git
+  link: /tool/git/git
 
 - title: Linux常用命令
   icon: linux
   details: 了解一些开发过程中常用的Linux命令和工具.
   link: /tool/Linux/Linux
 
-- title: 软件测试
-  icon: box
-  details: 了解软件测试流程及所需相关工具及缺陷管理等相关流程.
-  link: /tool/usual/
+- title: Docker容器
+  icon: docker
+  details: Docker容器的使用和管理.
+  link: /tool/Docker/Docker
 
-- title: 网络安全
-  icon: safe
-  details: 介绍一些常用的网络攻击手段（XSS，CSRF）及相关防范措施.
-  link: /tool/usual/
+- title: 数据库
+  icon: db
+  details: SQL及常用数据库，SQL优化
+  link: /tool/db/sql
 
 - title: 部署和运维
-  icon: loop
-  details: 熟悉常用的部署及运维方法，了解并学会使用容器化及CI/CD相关工具.
+  icon: application
+  details: 项目部署和运维，了解并学会CI/CD相关工具
   link: /tool/usual/
 
-- title: 网络基础
-  icon: network
-  details: 熟悉基本的网络基础知识，如常用的网络协议，IP地址等相关内容.
+- title: Maven
+  icon: maven
+  details: Maven依赖管理
+  link: /tool/maven
+
+- title: Gradle
+  icon: gradle
+  details: Gradle项目构建
+  link: /tool/Gradle
+
+- title: 计算机网络
+  icon: web
+  details: 网络基础知识，如常用的网络协议，IP地址等相关内容
   link: /tool/usual/
 
-- title: 设计模式
-  icon: symbol
-  details: 了解不同类型的设计模式，并在适当的情况下应用它们，可以提高代码的质量和可维护性.
-  link: /tool/usual/
+- title: 数据结构
+  icon: web-design
+  details: 常用数据结构
+  link: /tool/ds/
 
 - title: 面试手册
-  icon: article
-  details: 记录Java中常用的面试题分析及解答,加深记忆,面试必备.
-  link: /tool/usual/
-
-- title: 公共笔记
-  icon: others
-  details: 记录一些常用的软件和工具的下载地址和使用技巧，以及一些不便分类的内容.
-  link: /tool/usual/
-
-- title: Theme Hope
-  icon: more
-  details: A VuePress theme with tons of features✨
+  icon: note
+  details: 记录Java中常用的面试题分析及解答,加深记忆,面试必备
   link: /tool/usual/
 
 copyright: false

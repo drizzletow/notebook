@@ -1,10 +1,11 @@
 ---
 
 order: 10
+title: Annotation
+shortTitle: Annotation注解
 
 ---
 
-# Annotation注解
 
 Java 注解（Annotation）又称 Java 标注，是 JDK5.0 引入的一种注释机制、 Java 语言中的类、方法、变量、参数和包等都可以被标注
 

@@ -46,8 +46,8 @@ import win32con
 import win32gui
 import win32ui
 
-hwnd = win32gui.FindWindow(None, "地下城与勇士：创新世纪")
-print("游戏窗口句柄：", hwnd)
+hwnd = win32gui.FindWindow(None, "xxx")
+print("窗口句柄：", hwnd)
 
 # 游戏窗口基本大小信息
 left, top, right, bot = win32gui.GetWindowRect(hwnd)

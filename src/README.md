@@ -59,10 +59,10 @@ features:
   details: 网络基础知识，如常用的网络协议，IP地址等相关内容
   link: /tool/usual/
 
-- title: 数据结构
+- title: 数据结构与算法
   icon: web-design
-  details: 常用数据结构
-  link: /tool/ds/
+  details: 常用数据结构及算法
+  link: https://www.hello-algo.com/chapter_hello_algo/
 
 - title: 面试手册
   icon: note

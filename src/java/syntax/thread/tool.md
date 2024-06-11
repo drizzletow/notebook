@@ -7,7 +7,7 @@ title: 并发工具类
 
 
 
-## AQS抽象队列同步器
+## AQS理论及应用
 AQS（AbstractQueuedSynchronizer，抽象队列同步器）是Java并发包（`java.util.concurrent.locks`）中的一个核心组件，由Doug Lea设计，旨在为实现锁和其他同步组件（如信号量、屏障等）提供基础框架。AQS简化了自定义同步组件的开发过程，通过封装复杂的同步逻辑，如线程的阻塞、唤醒、同步状态管理等。
 
 1. **同步状态管理**：AQS提供了一个整型的同步状态（`state`）变量，用于表示资源是否被占用的状态。

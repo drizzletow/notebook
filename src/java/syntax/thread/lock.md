@@ -196,26 +196,106 @@ JVM为了提高效率，对synchronized进行了优化，包括无锁、偏向�
 
 `synchronized`的底层实现与Java对象头的`Mark Word`紧密相关
 
+
+<table style="width: 100%; border-collapse: collapse;">
+    <thead>
+        <tr style="background-color: #d9ead3;">
+            <th colspan="50" style="border: 1px solid #000; text-align: center; font-size: 24px;">64位虚拟机对象头的MarkWord</th>
+        </tr>
+        <tr style="background-color: #d9ead3;">
+            <th colspan="5" rowspan="2" style="border: 1px solid #000; text-align: center;">锁状态</th>
+            <th colspan="25" style="border: 1px solid #000; text-align: center;">56bit</th>
+            <th colspan="5" rowspan="2" style="border: 1px solid #000; text-align: center;">1bit</th>
+            <th colspan="5" rowspan="2" style="border: 1px solid #000; text-align: center;">4bit</th>
+            <th colspan="5" rowspan="2" style="border: 1px solid #000; text-align: center;">1bit<br>(是否偏向锁)</th>
+            <th colspan="5" rowspan="2" style="border: 1px solid #000; text-align: center;">2bit<br>(锁标志位)</th>
+        </tr>
+        <tr style="background-color: #d9ead3;">
+            <th colspan="10" style="border: 1px solid #000; text-align: center;">25bit</th>
+            <th colspan="15" style="border: 1px solid #000; text-align: center;">31bit</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr style="background-color: #c9daf8;">
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">无锁</td>
+            <td colspan="10" style="border: 1px solid #000; text-align: center;">unused</td>
+            <td colspan="15" style="border: 1px solid #000; text-align: center;">对象 hashCode</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">Cms_free</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">对象分代年龄</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">0</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">01</td>
+        </tr>
+        <tr style="background-color: #ffe599;">
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">偏向锁</td>
+            <td colspan="24" style="border: 1px solid #000; text-align: center;">threadId(54bit)(偏向锁的线程ID)</td>
+            <td colspan="6" style="border: 1px solid #000; text-align: center;">Epoch(2bit)</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">对象分代年龄</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">1</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">01</td>
+        </tr>
+        <tr style="background-color: #f9cb9c;">
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">轻量级锁</td>
+            <td colspan="40" style="border: 1px solid #000; text-align: center;">指向栈中锁的记录的指针</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">00</td>
+        </tr>
+        <tr style="background-color: #f4cccc;">
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">重量级锁</td>
+            <td colspan="40" style="border: 1px solid #000; text-align: center;">指向重量级锁的指针</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">10</td>
+        </tr>
+        <tr style="background-color: #c9daf8;">
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">GC 标志</td>
+            <td colspan="40" style="border: 1px solid #000; text-align: center;">空</td>
+            <td colspan="5" style="border: 1px solid #000; text-align: center;">11</td>
+        </tr>
+    </tbody>
+</table>
+
+
+
+
+
 **synchronized锁升级过程**:
 #### 1. 偏向锁（Biased Locking）
-- **场景**：最初，假设对象只有一个线程访问，为了减少不必要的同步开销，JVM会偏向于这个线程，将锁标记为偏向锁。
+当一个对象第一次被一个线程访问时，为了减少不必要的同步开销，JVM会尝试将其转变为偏向锁
 - **Mark Word变化**：记录当前访问线程的ID。
 - **触发条件**：对象首次被线程访问时，且之前未被其他线程争用过。
+::: tip
+- 如果获取到偏向锁的线程执行完毕并释放锁，且在整个过程中没有其他线程尝试竞争锁，Mark Word保持不变。偏向锁是延续的，直到有显式的线程竞争或者GC行为清除偏向状态
+
+- 如果在偏向锁持有期间，其他线程尝试获取同一锁，偏向锁将会撤销，转变为轻量级锁或重量级锁。
+
+**偏向锁撤销与升级流程**:
+1. **暂停竞争线程**：当检测到竞争需要撤销偏向锁时，当前竞争的线程会被暂时挂起。
+2. **恢复无锁状态**：恢复Mark Word为无锁状态，在已获取到偏向锁的线程栈中创建Lock Record, 将当前的偏向锁信息转移到轻量级锁的Lock Record中。
+3. **尝试轻量级锁**：重置后，竞争线程和原持有线程再尝试以轻量级锁的方式重新竞争锁。
+4. **升级重量级锁**：如果竞争激烈，轻量级锁继续失败，则升级为重量级锁。
+:::
 
 #### 2. 轻量级锁（Lightweight Locking）
-- **场景**：当有第二个线程尝试获取锁时，偏向锁失效，进入轻量级锁状态。
-- **Mark Word变化**：拷贝对象头中的Mark Word到线程栈中创建的Lock Record中，并尝试通过CAS操作将Lock Record的指针替换到对象头中。
+每个试图获取轻量级锁的线程，会在自己的栈帧中创建一个Lock Record，用于记录锁相关的信息（例如对象头Mark Word的拷贝）。每个参与竞争的线程都会尝试通过CAS操作，将对象的Mark Word指向自己的Lock Record。之前持有偏向锁的线程和其他线程在轻量级锁竞争中的优势是相同的，没有特别的优先级。如果成功，表示该线程取得了锁；如果失败，表示其他线程正在竞争这把锁。
+- **Mark Word变化**：拷贝对象头中的Mark Word到 在线程栈中创建的Lock Record中，并通过CAS操作将对象头的Mark Word替换为指向Lock Record的指针。
 - **自旋**：如果CAS失败，当前线程不会立即阻塞，而是进行自旋等待原持有者释放锁。
 - **触发条件**：存在多线程竞争，但竞争程度不激烈，通过自旋有机会快速获得锁。
 
+如果竞争不是很激烈，线程通过CAS获取轻量级锁后顺利执行完毕, 会进行释放轻量级锁并恢复Mark Word为无锁状态。 Mark Word会重新指向通过CAS操作成功后的线程的Lock Record。
+
+
 #### 3. 重量级锁（Heavyweight Locking）
-- **场景**：如果多个线程持续竞争同一把锁，自旋达到一定次数后仍然无法获得锁，锁就会升级为重量级锁。
-- **Mark Word变化**：指向一个互斥量（monitor）的指针，这个monitor是一个操作系统级别的实体，用于线程排队。
+如果多个线程持续竞争同一把锁，自旋达到一定次数后仍然无法获得锁（JVM会根据实时情况动态调整自旋次数），锁就会升级为重量级锁。
+- **Mark Word变化**：指向一个Monitor对象（系统互斥量指针）
 - **阻塞与唤醒**：未获得锁的线程会被阻塞并放入操作系统的等待队列中，由操作系统负责线程的调度和唤醒。
 - **触发条件**：线程竞争激烈，自旋无效。
 
+当锁升级为重量级锁后：线程将尝试获取锁，进入Monitor对象的等待队列。线程通过操作系统的调度和唤醒机制进入阻塞状态，等待锁被释放。
 
-`synchronized`锁的升级是根据实际的线程竞争情况动态调整的，旨在平衡性能和线程安全需求。
+当重量级锁释放后, 会将Monitor对象状态和锁引用信息清除，并唤醒等待线程
+
+
+::: info 锁降级
+锁降级是基于竞争线程的动态变化。当竞争减少后，JVM可能将锁状态降级以提升性能。
+:::
+
 
 
 ### CAS与自旋锁

@@ -829,6 +829,16 @@ public class TriggerExample {
 
 Java中提供了丰富的原子类与并发集合来支持高并发环境下的线程安全操作。
 
+::: tip 原子类的底层实现原理
+`AtomicInteger`等原子类利用了`Unsafe`类提供的底层操作，其中包括Compare-And-Swap (CAS) 操作。==通过`Unsafe`类调用的CAS操作最终会映射到硬件层面的原子指令==。大多数现代处理器（如x86架构）都提供了对CAS指令的直接支持，这使得CAS操作可以在硬件层面保证原子性，即操作过程中不会被中断，保证了数据的一致性。
+
+- **原语与操作系统**: 原子操作（atomic operation）在计算机科学中指的是不可分割的操作，即一个操作要么全部完成，要么完全不执行，不会出现中间状态。虽然“原语”一词有时在操作系统中用来指代不可中断的系统操作序列，但这里的原子操作更多是指硬件层面的支持，而非严格意义上的操作系统概念。不过，两者都强调了操作的不可分割性和完整性。
+
+- **关于数据一致性**: CAS确实有助于避免数据不一致的问题，因为它在修改数据前会先检查当前值是否符合预期，只有在符合预期的情况下才会更新，这样可以减少多线程环境下的数据竞争问题。但是，需要注意的是，单纯依赖CAS并不能解决所有的并发问题，比如ABA问题，以及在存在多个竞争线程不断尝试更新同一变量时可能导致的活锁问题。因此，在设计并发程序时，还需要综合考虑其他同步机制和策略。
+
+因此利用Java提供的原子类在性能和可靠性上通常优于自定义的CAS实现，尤其是在内存操作层面
+:::
+
 **原子类 (java.util.concurrent.atomic 包)**：
 
 原子类主要用于在多线程环境中对基本类型和引用类型进行线程安全的更新操作，它们主要基于CAS (Compare and Swap) 操作实现非阻塞同步。主要原子类包括：
@@ -844,6 +854,7 @@ Java中提供了丰富的原子类与并发集合来支持高并发环境下的�
 9. **`AtomicReferenceFieldUpdater<T,U>`**：原子地更新指定类实例中引用类型字段的值。
 10. **`AtomicIntegerArray`**：对整数数组中的元素进行原子更新。
 11. **`AtomicLongArray`**：对长整型数组中的元素进行原子更新。
+
 
 **并发集合 (java.util.concurrent 包)**：
 
@@ -956,9 +967,237 @@ public class AtomicReferenceExample {
 ```
 
 
-### LongAdder
+### ABA问题解决方案
 
-`LongAdder` 是 Java 8 引入的一个高性能的原子类，位于 `java.util.concurrent.atomic` 包下，专门用于在高并发环境下进行计数操作。相较于传统的 `AtomicLong`，`LongAdder` 在面对极高并发时能提供更高的吞吐量，但代价是占用更多的内存空间。
+原子类中，`AtomicStampedReference` 是专门设计来解决ABA问题的。ABA问题发生在当一个变量被多次从A修改为B然后再改回A，如果只关注变量的最终值，看起来好像没有变化，但实际上中间经历了B状态。在某些场景下，这种中间状态的改变是有意义的，需要被检测到。
+
+::: tip AtomicStampedReference是如何解决ABA问题的？
+`AtomicStampedReference` 通过添加一个额外的“时间戳”（stamp）字段来跟踪值的变化，每次更新时都会修改这个时间戳，因此即使值回到了初始值，时间戳也能反映出中间发生过变化，从而避免了ABA问题。
+:::
+
+**构造方法**:
+
+- **`AtomicStampedReference(V initialRef, int initialStamp)`**  
+  创建一个新的 `AtomicStampedReference` 实例，初始化引用值为 `initialRef`，初始邮戳为 `initialStamp`。
+
+**常用方法**:
+
+- `V get()`  
+  返回当前引用的值，但不返回邮戳。这个方法不常用于并发控制，因为它不提供邮戳信息，不能帮助检测 ABA 问题。
+- `int getStamp()`
+  此方法单独返回当前 AtomicStampedReference 的邮戳值，不涉及引用值的获取。这个方法通常用于只需要检查邮戳，而不需要同时获取引用值的场景。
+- **`V get(int[] stampHolder)`**  
+  返回当前引用的值，并==将当前邮戳设置给 `stampHolder` 数组的第一个元素==。这个方法用于准备进行并发控制操作，获取当前状态的同时获取邮戳。
+
+- **`boolean compareAndSet(V expectedReference, V newReference, int expectedStamp, int newStamp)`**  
+  尝试原子地将引用值和邮戳一起更新。如果当前引用值等于 `expectedReference` 且当前邮戳等于 `expectedStamp`，则更新引用值为 `newReference`，邮戳为 `newStamp`，并返回 `true`；否则不做任何操作并返回 `false`。这是解决 ABA 问题的关键方法。
+
+- `boolean weakCompareAndSet(V expectedReference, V newReference, int expectedStamp)` 
+  类似于 `compareAndSet`，但这是一个弱形式的操作，它对于某些并发环境可能提供更宽松的内存一致性保证，具体取决于 JVM 实现。通常在不需要严格内存排序保证的场景下使用。
+
+- `void set(V newValue, int newStamp)`
+  直接设置引用值为 `newValue` 和邮戳为 `newStamp`，不涉及比较，不提供原子性保证，通常在初始化或确定不会有并发更新的场景下使用。
+
+::: info stampHolder为什么需要使用数组类型？
+- **stampHolder**：一个整数数组，通常长度为1，用于接收 `get` 方法返回的当前邮戳值。
+
+`stampHolder`使用数组是为了能够在原子操作中更新时间戳，并确保这个更新能被外部代码感知，从而保证了并发控制的有效性。这是Java并发编程中一种常见的技巧，用来绕过基本类型值传递的限制
+:::
+
+下面是一个使用`AtomicStampedReference`模拟银行账户转账场景的示例：
+```java
+import java.util.concurrent.atomic.AtomicStampedReference;
+
+class Account {
+    private int balance;
+
+    public Account(int balance) {
+        this.balance = balance;
+    }
+
+    public int getBalance() {
+        return balance;
+    }
+
+    public void setBalance(int balance) {
+        this.balance = balance;
+    }
+}
+
+public class AtomicStampedReferenceDemo {
+
+    public static void main(String[] args) throws InterruptedException {
+        Account initialAccount = new Account(100);
+        AtomicStampedReference<Account> accountRef = new AtomicStampedReference<>(initialAccount, 0);
+
+        // 模拟两个线程同时操作账户
+        Thread withdrawThread = new Thread(() -> {
+            int[] stampHolder = new int[1];
+            Account oldAccount;
+            do {
+                oldAccount = accountRef.get(stampHolder); // 获取当前账户引用和时间戳
+                Account newAccount = new Account(oldAccount.getBalance() - 50); // 尝试转账
+                boolean success = accountRef.compareAndSet(oldAccount, newAccount, stampHolder[0], stampHolder[0] + 1);
+            } while (!success); // 如果其他线程修改过，就重试
+            System.out.println("Withdraw successful. New balance: " + newAccount.getBalance());
+        });
+
+        Thread depositThread = new Thread(() -> {
+            int[] stampHolder = new int[1];
+            Account oldAccount;
+            do {
+                oldAccount = accountRef.get(stampHolder); // 获取当前账户引用和时间戳
+                Account newAccount = new Account(oldAccount.getBalance() + 100); // 存款
+                boolean success = accountRef.compareAndSet(oldAccount, newAccount, stampHolder[0], stampHolder[0] + 1);
+            } while (!success); // 如果其他线程修改过，就重试
+            System.out.println("Deposit successful. New balance: " + newAccount.getBalance());
+        });
+
+        withdrawThread.start();
+        depositThread.start();
+
+        withdrawThread.join();
+        depositThread.join();
+
+        Account finalAccount = accountRef.getReference();
+        System.out.println("Final balance: " + finalAccount.getBalance());
+    }
+}
+```
+
+
+至于其他原子类，如`AtomicInteger`、`AtomicLong`、`AtomicBoolean`、`AtomicReference`等，它们虽然没有直接内置解决ABA问题的机制，但它们在很多常见并发场景下依然非常有用。例如：
+
+- **AtomicInteger 和 AtomicLong**：用于原子地更新整数值，常用于计数器、序列生成器等场景。
+- **AtomicBoolean**：用于原子地更新布尔值，适合做标志位的控制。
+- **AtomicReference**：可以原子地更新对象引用，适合管理共享对象的状态变更。
+
+这些原子类在处理并发更新时，能够保证更新操作的原子性和线程安全性，减少了同步开销，提高了并发性能。它们在不需要关心ABA问题，或者可以通过其他逻辑规避ABA问题的场景下，是非常有效的工具。因此，尽管`AtomicStampedReference`提供了特殊的ABA解决方案，但其他原子类在不需要解决ABA问题的常规并发控制中仍然非常重要且常用。
+
+
+
+### 原子更新器类
+
+`AtomicIntegerFieldUpdater`, `AtomicLongFieldUpdater`, 和 `AtomicReferenceFieldUpdater` 都是 Java 并发包中的类，它们提供了在非 volatile 字段上执行原子更新的能力。
+
+- **AtomicIntegerFieldUpdater**: 专门用于原子更新指定类实例中的 `int` 类型字段。你可以使用它来进行原子性的增加、减少或设置 `int` 字段的值。
+  
+- **AtomicLongFieldUpdater**: 用于原子更新指定类实例中的 `long` 类型字段。和 `AtomicIntegerFieldUpdater` 类似，但它处理的是 `long` 类型的数值，适用于需要更大数值范围的场景。
+  
+- **AtomicReferenceFieldUpdater**: 用于原子更新指定类实例中的引用类型字段，无论是对象引用还是其他非原始类型（如 `String`, `AtomicInteger` 等）。这使得你可以安全地更新对象引用而无需同步代码。
+
+::: info 原子更新器特性
+- **非阻塞操作**：所有这些更新器都提供非阻塞的原子操作，提高了并发性能。
+- **反射使用**：它们都利用反射来访问目标类的字段，因此要求字段必须是可访问的（非 private），并且在类加载时就已经存在。
+- **线程安全**：提供的更新方法（如 `compareAndSet`, `getAndIncrement` 等）都是线程安全的，可以安全地在多线程环境中使用。
+- **创建方式**：都需要通过静态工厂方法（如 `newUpdater`）创建一个更新器实例，指定目标类、字段类型和字段名。
+:::
+
+
+**使用场景**：
+- **AtomicIntegerFieldUpdater** 和 **AtomicLongFieldUpdater** 主要用于计数器、序列号生成、状态标志等需要原子更新数值类型字段的场景。
+  
+- **AtomicReferenceFieldUpdater** 则更加通用，适用于需要原子更新任何引用类型的情况，如对象的替换、状态模式中的状态对象切换等。
+
+
+以下是一个使用 `AtomicReferenceFieldUpdater` 的简单示例：
+
+```java
+import java.util.concurrent.atomic.AtomicReferenceFieldUpdater;
+
+class User {
+    // 注意：字段不能是private，因为AtomicReferenceFieldUpdater需要通过反射访问
+    public String status;
+
+    public User(String status) {
+        this.status = status;
+    }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "status='" + status + '\'' +
+                '}';
+    }
+}
+
+public class AtomicReferenceFieldUpdaterExample {
+
+    public static void main(String[] args) {
+        // 创建User对象实例
+        User user = new User("active");
+
+        // 创建AtomicReferenceFieldUpdater实例
+        // 第一个参数是包含待更新字段的类的Class对象
+        // 第二个参数是待更新字段的类型
+        // 第三个参数是待更新字段的名字
+        AtomicReferenceFieldUpdater<User, String> statusUpdater =
+                AtomicReferenceFieldUpdater.newUpdater(User.class, String.class, "status");
+
+        System.out.println("Initial status: " + user);
+
+        // 原子地更新用户状态
+        if (statusUpdater.compareAndSet(user, "active", "inactive")) {
+            System.out.println("Status updated to: " + user);
+        } else {
+            System.out.println("Update failed: status was not 'active'");
+        }
+
+        // 尝试再次更新状态，模拟并发更新场景
+        if (statusUpdater.compareAndSet(user, "inactive", "pending")) {
+            System.out.println("Status updated again to: " + user);
+        } else {
+            System.out.println("Second update failed: status was not 'inactive'");
+        }
+    }
+}
+```
+
+::: tip
+在某些情况下，如果字段也需要独立的内存可见性保证（例如，当多个线程直接读取该字段而不总是通过原子更新器操作时），则可能需要考虑使用 `volatile`。
+:::
+
+
+
+
+### 原子操作增强类
+
+`LongAdder`、`DoubleAdder`、`LongAccumulator` 和 `DoubleAccumulator` 都是在 JDK 8 中引入的。这些类扩展了 Java 并发包的功能，提供了更高效的并发计数和累加方案，特别是针对高并发场景。它们通过分段累计的方式减少了争用，从而提高了在多线程环境下的性能。
+
+**1. `LongAdder` 和 `DoubleAdder`**
+- **用途**：这两个类用于高效地进行累加操作，特别是在高并发环境下。它们解决了`AtomicLong`在高并发时的性能瓶颈，通过分段累计的方式来减少竞争，提高吞吐量。
+- **原理**：内部维护多个细胞（cell），每个细胞独立累加，最后汇总结果。当细胞数量不够时会动态扩容。
+  ```java
+  LongAdder adder = new LongAdder();
+  for (int i = 0; i < 10000; i++) {
+      adder.increment();
+  }
+  System.out.println("Total: " + adder.sum());
+  ```
+
+**2. `LongAccumulator` 和 `DoubleAccumulator`**
+
+- **用途**：提供了一个更通用的累加框架，允许用户自定义累加逻辑（通过函数）。适用于需要根据特定规则累积值的场景。
+- **原理**：同样采用分段累计的方式，但累加逻辑由用户提供。
+  ```java
+  LongAccumulator accumulator = new LongAccumulator((x, y) -> x * y, 1L);
+  accumulator.accumulate(2L);
+  accumulator.accumulate(3L);
+  System.out.println("Result: " + accumulator.get());
+  ```
+
+::: tip 核心原理
+这些原子操作增强类的核心原理都是基于**比较-交换（Compare-And-Swap, CAS）**算法，这是一种无锁的同步技术。在执行更新操作时，CAS算法会先比较内存中的值是否与预期值相同，如果相同则更新，否则不更新，这保证了操作的原子性。此外，通过分段累计等策略来减少竞争，提高并发性能。
+:::
+
+**使用注意事项**：
+- **性能考量**：虽然增强类在高并发下性能优秀，但在低并发场景下可能不如直接使用基本原子类。
+- **内存消耗**：分段累计的策略可能会增加内存使用量。
+- **正确性**：使用时确保理解其工作原理，避免误用导致数据不一致。
+
+<br/>
+
+**下面将以`LongAdder` 为例进行详细介绍**：
 
 **设计原理**：
 1. **分段思想（Striping）**：`LongAdder` 内部采用了分段的思想来减少并发冲突。它不是维护一个单一的值，而是维护了一个名为 `Cell` 的数组（默认情况下为一个），每个 `Cell` 都是一个单独的计数器。当多个线程同时执行增加操作时，它们很可能会更新不同的 `Cell`，从而减少了锁的竞争。
@@ -1018,6 +1257,107 @@ public class LongAdderDemo {
         
         // 获取最终计数
         System.out.println("Total count: " + counter.sum());
+    }
+}
+```
+
+
+<br>
+
+综合示例：对比不同并发计数方式在高并发情况下的性能差异，主要测试 synchronized关键字、`AtomicLong`、`LongAdder`和`LongAccumulator` 四种方法。代码通过创建50个线程，每个线程执行100万次点击计数操作，来比较这四种方式的执行效率
+```java
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
+import java.util.concurrent.atomic.LongAdder;
+import java.util.concurrent.atomic.LongAccumulator;
+import java.util.concurrent.CountDownLatch;
+
+class ClickNumber {
+    int number = 0;
+    AtomicLong atomicLong = new AtomicLong(0);
+    LongAdder longAdder = new LongAdder();
+    LongAccumulator longAccumulator = new LongAccumulator(Long::sum, 0);
+    
+    public synchronized void clickBySynchronized() {
+        number++;
+    }
+
+    public void clickByAtomicLong() {
+        atomicLong.getAndIncrement();
+    }
+
+    public void clickByLongAdder() {
+        longAdder.increment();
+    }
+
+    public void clickByLongAccumulator() {
+        longAccumulator.accumulate(1);
+    }
+}
+
+public class AccumulatorCompareDemo {
+    public static final int _1W = 10000;
+    public static final int THREAD_NUMBER = 50;
+    private static ExecutorService executorService = Executors.newFixedThreadPool(THREAD_NUMBER);
+
+    public static void main(String[] args) throws InterruptedException {
+        ClickNumber clickNumber = new ClickNumber();
+        long startTime;
+        long endTime;
+        CountDownLatch[] latches = {new CountDownLatch(THREAD_NUMBER), new CountDownLatch(THREAD_NUMBER),
+                                  new CountDownLatch(THREAD_NUMBER), new CountDownLatch(THREAD_NUMBER)};
+
+        testClickMethod(clickNumber, latches[0], "clickBySynchronized");
+        testClickMethod(clickNumber, latches[1], "clickByAtomicLong");
+        testClickMethod(clickNumber, latches[2], "clickByLongAdder");
+        testClickMethod(clickNumber, latches[3], "clickByLongAccumulator");
+
+        executorService.shutdown();
+    }
+
+    private static void testClickMethod(ClickNumber clickNumber, CountDownLatch latch, String methodName) throws InterruptedException {
+        long startTime = System.currentTimeMillis();
+        for (int i = 0; i < THREAD_NUMBER; i++) {
+            executorService.submit(() -> {
+                try {
+                    for (int j = 1; j <= 100 * _1W; j++) {
+                        switch (methodName) {
+                            case "clickBySynchronized":
+                                clickNumber.clickBySynchronized();
+                                break;
+                            case "clickByAtomicLong":
+                                clickNumber.clickByAtomicLong();
+                                break;
+                            case "clickByLongAdder":
+                                clickNumber.clickByLongAdder();
+                                break;
+                            case "clickByLongAccumulator":
+                                clickNumber.clickByLongAccumulator();
+                                break;
+                        }
+                    }
+                } finally {
+                    latch.countDown();
+                }
+            });
+        }
+        latch.await();
+        long endTime = System.currentTimeMillis();
+        switch (methodName) {
+            case "clickBySynchronized":
+                System.out.println("------costTime: " + (endTime - startTime) + " 毫秒\t" + methodName + ": " + clickNumber.number);
+                break;
+            case "clickByAtomicLong":
+                System.out.println("------costTime: " + (endTime - startTime) + " 毫秒\t" + methodName + ": " + clickNumber.atomicLong.get());
+                break;
+            case "clickByLongAdder":
+                System.out.println("------costTime: " + (endTime - startTime) + " 毫秒\t" + methodName + ": " + clickNumber.longAdder.sum());
+                break;
+            case "clickByLongAccumulator":
+                System.out.println("------costTime: " + (endTime - startTime) + " 毫秒\t" + methodName + ": " + clickNumber.longAccumulator.get());
+                break;
+        }
     }
 }
 ```

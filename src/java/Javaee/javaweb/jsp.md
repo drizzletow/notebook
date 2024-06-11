@@ -22,7 +22,7 @@ JSP全名为Java Server Pages，中⽂名叫java服务器⻚⾯，其根本是�
 <!-- HTML注释 -->
 ```
 
-```jsp
+```html
 <%-- JSP注释 --%>
 ```
 
@@ -60,7 +60,7 @@ Note：
 
 三大指令: page指令、include指令和taglib指令
 
-```jsp
+```html
 <%--1. page指令  (要注意的是，在page指令中只有import属性可以重复设置)--%>
 <%@page import="javax.servlet.*, java.util.Vector" %>
 <%@page import="java.util.Random" %>
@@ -89,7 +89,7 @@ extends：指定JSP编译的servlet的父类！
 | deferredSyntaxAllowedAsLiteral="true\|false" |        | JSP页面的模板文本中是否允许出现字符序列`#{`                  |
 | trimDirectiveWhitespaces="true\|false"       | false  | 指示模板中的空白应该如何处理(默认值是false，即不删除空白)    |
 
-```jsp
+```html
 
 <%--2. include指令 --%>
 <%--用于在JSP页面中静态包含一个文件，该文件可以是JSP页面、HTML网页、文本文件或一段Java代码--%>
@@ -161,7 +161,7 @@ Today is
 | jsp:body        | 设置动态定义的XML元素内容                     |
 | jsp:text        | 在JSP页面和文档中使用写入文本的模板           |
 
-```jsp
+```html
 
 <jsp:useBean id="test" class="com.example.main.TestBean" />
 
@@ -238,7 +238,7 @@ public class TestBean {
 |   ! or not   |             测试取反             |
 |    empty     |           测试是否空值           |
 
-```jsp
+```html
 
 <!--使用表达式及操作符-->
 Box Perimeter is: ${2*box.width + 2*box.height}
@@ -263,7 +263,7 @@ Box Perimeter is: ${2*box.width + 2*box.height}
 
 pageScope，requestScope，sessionScope，applicationScope变量用来访问存储在各个作用域层次的变量
 
-```jsp
+```html
 
 <!-- 脚本元素和表达式取值对比 -->
 <%=pageContext.getAttribute("address1") %>
@@ -330,7 +330,7 @@ maven引入：
 
 Core标签库主要包括了`一般用途的标签`、`条件标签`、`迭代标签`和`与URL相关的标签 `
 
-```jsp
+```html
 
 <!-- 在JSP页面中使用Core标签库，要使用taglib指令，指定引用的标签库 -->
 <%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
@@ -341,7 +341,7 @@ Core标签库主要包括了`一般用途的标签`、`条件标签`、`迭代�
 
 一般用途的标签有：`<c:out>`、`<c:set>`、`<c:remove>`和`<c:catch>`
 
-```jsp
+```html
 
 <%-- 1. <c:out>: 类似于JSP的表达式<%=expression%>，或者EL表达式${el-expression} --%>
 <c:out value="hello"></c:out>
@@ -367,7 +367,7 @@ Core标签库主要包括了`一般用途的标签`、`条件标签`、`迭代�
 
 条件标签包括`<c:if>`、`<c:choose>`、`<c:when>`和`<c:otherwise>`
 
-```jsp
+```html
 
 <%-- 1. <c:if> 用于实现Java语言中if语句的功能 --%>
 <c:if test="${3 > 0}">
@@ -394,7 +394,7 @@ Core标签库主要包括了`一般用途的标签`、`条件标签`、`迭代�
 
 迭代标签有`<c:forEach>`和`<c:forTokens>`
 
-```jsp
+```html
 
 <%-- 1. <c:forEach>用于对包含了多个对象的集合进行迭代 --%>
 <c:forEach var="i" begin="1" end="5">
@@ -430,7 +430,7 @@ Core标签库主要包括了`一般用途的标签`、`条件标签`、`迭代�
 - `<c:param>` 为一个URL添加请求参数
 - `<c:redirect>` 将客户端的请求重定向到另一个资源
 
-```jsp
+```html
 
 <%-- 1. <c:import>标签类似于 <jsp:include>动作元素 --%>
 <c:import url="demo.jsp"/>
@@ -450,7 +450,7 @@ Core标签库主要包括了`一般用途的标签`、`条件标签`、`迭代�
 
 格式化标签包括`<fmt:timeZone>`、`<fmt:setTimeZone>`、`<fmt:formatNumber>`、`<fmt:parseNumber>`、`<fmt:formatDate>`和`<fmt:parseDate>`
 
-```jsp
+```html
 
 <%-- <fmt:formatDate>标签用于使用不同的方式格式化日期 --%>
 <c:set var="now" value="<%=new Date() %>"/>

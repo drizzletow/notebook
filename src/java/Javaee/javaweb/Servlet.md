@@ -1030,7 +1030,7 @@ protected void doPost(HttpServletRequest request, HttpServletResponse response)
 
 上传页面示例：
 
-```jsp
+```html
 
 <!-- 注意: (1) form标签中要添加enctype属性 
           (2) 提交方式必须是post   -->

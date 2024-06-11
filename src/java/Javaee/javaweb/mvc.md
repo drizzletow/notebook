@@ -297,7 +297,7 @@ JSP中采用HTML语言直接生成界面，还可以在界面中使用 `<% %>` �
 
 一个简单的例子：
 
-```jsp
+```html
 
 <%@ page language="java" contentType="text/html; charset=UTF-8"
     pageEncoding="UTF-8"%>
@@ -386,7 +386,7 @@ Web服务器以静态HTML网页的形式将HTTP response返回到您的浏览器
 
 虽然好了些，但还让JSP做了过多的工作，JSP中把视图工作和请求调度（控制器）的工作耦合在一起了，如下所示：
 
-```jsp
+```html
 
 <%@ page import="cn.itdrizzle.bean.UserBean" %>
 <%@ page contentType="text/html;charset=UTF-8" language="java" %>

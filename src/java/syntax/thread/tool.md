@@ -660,9 +660,7 @@ class NetMall {
 
 ## ThreadLocal
 
-ThreadLocal，顾名思义，为线程本地变量。其核心在于为每个线程创建一个单独的变量副本，即使多个线程访问的是同一个ThreadLocal实例，它们看到的也是各自线程内部的独立副本，从而实现了线程间数据的隔离。ThreadLocal的工作原理主要依赖于其内部类`ThreadLocalMap`，这是一个定制化的哈希映射，键是ThreadLocal实例本身，值则是线程本地存储的变量副本。
-
-每个线程的`Thread`类中都有一个名为`threadLocals`的成员变量，类型为`ThreadLocal.ThreadLocalMap`，用来存储该线程对应的ThreadLocal变量副本。当线程首次调用ThreadLocal的`set()`方法设置值时，如果该线程的`ThreadLocalMap`尚未初始化，则会创建一个新的`ThreadLocalMap`实例，并将值设置进去。之后，每次调用`get()`方法时，都会从当前线程的`ThreadLocalMap`中取出对应的值。
+ThreadLocal，顾名思义，为线程本地变量。其核心在于为每个线程创建一个单独的变量副本，即使多个线程访问的是同一个ThreadLocal实例，它们看到的也是各自线程内部的独立副本，从而实现了线程间数据的隔离。
 
 ::: info 使用场景
 1. **数据库连接或Session管理**：在Web应用中，为每个请求线程绑定一个数据库连接或用户Session，确保事务处理的隔离性。
@@ -701,3 +699,192 @@ public void cleanup() {
 - **使用范围**：适用于线程间不需要共享数据，且数据生命周期与线程相同的场景。
 
 ThreadLocal是一种强大且灵活的工具，用于解决多线程环境下数据隔离和共享的问题。但使用时需谨慎管理资源，以防止潜在的内存泄露问题。
+:::
+
+
+
+### 底层实现原理
+
+ThreadLocal的工作原理主要依赖于其内部类`ThreadLocalMap`，这是一个定制化的哈希映射，键是ThreadLocal实例本身，值则是线程本地存储的变量副本。
+
+::: tip threadLocals和ThreadLocalMap
+每个线程的`Thread`类中都有一个名为`threadLocals`的成员变量，类型为`ThreadLocal.ThreadLocalMap`，用来存储该线程对应的ThreadLocal变量副本。
+
+当线程首次调用ThreadLocal的`set()`方法设置值时，如果该线程的`ThreadLocalMap`尚未初始化，则会创建一个新的`ThreadLocalMap`实例，并将值设置进去。之后，每次调用`get()`方法时，都会从当前线程的`ThreadLocalMap`中取出对应的值。
+:::
+
+
+**ThreadLocal的工作原理**：
+
+1. **ThreadLocal实例化**：
+   当创建ThreadLocal实例时，实际上只是创建了一个普通的对象。真正与线程绑定的变量存储在每个线程的ThreadLocalMap中。
+
+2. **get方法**：
+   - 首先，通过`Thread.currentThread()`获取当前线程。
+   - 然后，从当前线程的`threadLocals`字段中获取ThreadLocalMap（每个线程都会有一个这样的字段）。
+   - 在ThreadLocalMap中，使用当前ThreadLocal实例作为键查找对应的值。如果找到，则返回；如果没有找到且提供了initialValue方法，则调用initialValue方法初始化值并存入。
+
+3. **set方法**：
+   - 同样获取当前线程和其ThreadLocalMap。
+   - 将当前ThreadLocal实例作为键，要设置的值作为值，存入或更新到ThreadLocalMap中。
+
+4. **initialValue方法**：
+   这是一个受保护的方法，用户可以通过覆盖它来指定线程本地变量的初始值。默认实现返回null。
+
+
+::: info ThreadLocalMap实现细节
+==ThreadLocalMap实际上是一个简化版的哈希映射，它并没有实现Map接口，而是直接在内部实现了一套类似Map的功能==，主要用于存储ThreadLocal对象作为键（Key），以及对应的线程局部变量值作为值（Value）。
+
+**数据结构与成员变量**
+
+ThreadLocalMap的内部数据结构主要是一个==Entry数组==，这个数组的大小是2的幂，初始容量是16。Entry是ThreadLocalMap中的静态内部类，它代表了映射表中的每一个键值对项。每个Entry继承了WeakReference类（在Java 8及以前版本中），但在Java 9及以后版本中改为直接持有ThreadLocal的强引用，以解决潜在的内存泄漏问题，同时增加了对null的特殊处理。Entry结构大致如下：
+
+```java
+static class Entry extends WeakReference<ThreadLocal<?>> {
+    /** The value associated with this ThreadLocal. */
+    Object value;
+    
+    Entry(ThreadLocal<?> k, Object v) {
+        super(k);
+        value = v;
+    }
+}
+```
+在ThreadLocalMap中，每个Entry的键实际上就是ThreadLocal对象本身。具体来说，每个Entry实例包含两个主要部分：
+
+1. **键（Key）**：这个键是指向ThreadLocal实例的引用。在JDK 8及以前的版本中，这个引用是WeakReference类型的（弱引用ThreadLocal对象），而在JDK 9及之后，为了减少内存泄露的风险，改为了直接持有ThreadLocal的强引用。
+
+2. **值（Value）**：这个值是ThreadLocal所关联的线程局部变量的具体数据，也就是通过ThreadLocal的set方法设置的值。
+
+所以，当提到“Entry的键”时，实际上指的就是用来作为查找依据的那个ThreadLocal实例。当线程尝试通过某个ThreadLocal实例获取其关联的值时，ThreadLocalMap会使用这个ThreadLocal实例作为查找键，在其内部的Entry数组中定位到相应的Entry，从而获取到对应的值。
+
+
+
+**源码分析**：
+
+1. **初始化**：ThreadLocalMap通常在首次调用ThreadLocal的set或get方法时，由当前线程自动创建。
+
+2. **存储（set方法）**：在set方法中，首先通过当前线程获取或创建ThreadLocalMap，然后尝试插入或更新Entry。如果存在哈希冲突（两个不同的ThreadLocal对象计算出相同的索引），它会通过线性探测法找到下一个空位或匹配的ThreadLocal。
+
+3. **读取（get方法）**：get方法同样先获取当前线程的ThreadLocalMap，然后根据ThreadLocal实例查找对应的Entry。如果找到了对应的Entry但发现ThreadLocal对象已经被回收（在Java 8及以前），则会进行一次“清除”操作，即移除这个无效的Entry并尝试重试查找。
+
+4. **清理**：为了防止内存泄漏，ThreadLocalMap提供了若干清理机制。例如，在get、set、replace等方法中，如果发现键为null的Entry（表示ThreadLocal对象已被GC回收），会将其移除并进行必要的整理操作。
+
+ThreadLocalMap通过在每个线程内部维护一个独立的映射表，实现了线程局部变量的隔离，有效地解决了多线程环境下变量共享的问题。其内部的哈希表结构和特殊的清理机制确保了高效且安全的访问与存储。
+:::
+
+
+下面将通过代码和UML图解释ThreadLocal的底层原理：
+
+```java
+public class ThreadLocalExample {
+    public static class MyThreadLocal extends ThreadLocal<String> {
+        @Override
+        protected String initialValue() {
+            return "Initial Value";
+        }
+    }
+
+    public static void main(String[] args) {
+        // 创建ThreadLocal实例
+        MyThreadLocal threadLocal = new MyThreadLocal();
+        
+        // 获取当前线程的ThreadLocalMap，并设置值
+        threadLocal.set("Custom Value");
+        
+        // 获取ThreadLocalMap中的值
+        String value = threadLocal.get(); // value = "Custom Value"
+        
+        // 键：MyThreadLocal实例（即threadLocal对象）
+        // 值："Custom Value"
+        
+        // 清理
+        threadLocal.remove();
+    }
+}
+```
+
+@startuml
+
+!define weak "weak"
+!define strong "strong"
+
+class Thread {
+    - ThreadLocal.ThreadLocalMap threadLocals
+    + getMap() : ThreadLocalMap
+}
+
+class ThreadLocal<T> {
+    + set(T value)
+    + get() : T
+    + remove()
+}
+
+class MyThreadLocal extends ThreadLocal<String> {
+    + initialValue() : String
+}
+
+class ThreadLocalMap {
+    + Entry[] table
+    + getEntry(ThreadLocal key) : Entry
+    + set(ThreadLocal key, Object value)
+}
+
+class Entry {
+    - ThreadLocal key
+    - Object value
+}
+
+Thread --* ThreadLocalMap : has
+ThreadLocal <|-- MyThreadLocal : extends
+ThreadLocalMap o-- Entry : contains
+ThreadLocalMap --> ThreadLocal : holds
+Entry --> MyThreadLocal : {weak reference}
+Entry --> "Custom Value" : {strong reference}
+
+
+note right of Entry::key
+Key is a weak reference to the ThreadLocal instance.
+end note
+
+@enduml
+
+
+- ThreadLocal实例并不直接保存每个线程的值，而是通过每个线程所持有的一个ThreadLocalMap来存储和查找这些值
+- ThreadLocalMap内部实际上是一个定制的哈希表，它使用ThreadLocal的实例作为键来存储值
+
+- **弱引用（Weak Reference）**: ThreadLocal被存储为键，使用的是弱引用。这意味着只要ThreadLocal对象没有被其他地方强引用，就可以被垃圾回收
+- **强引用（Strong Reference）**: value是强引用，意味着只要Entry存在，value的对象就不会被垃圾回收
+
+
+
+
+### 内存泄露问题
+
+ThreadLocal内存泄露问题的核心在于其内部使用的ThreadLocalMap（ThreadLocal的内部类）的键值对管理机制。ThreadLocalMap使用ThreadLocal实例作为键（Key），而线程的局部变量值作为值（Value）。在JDK 8及以前的版本中，键（即ThreadLocal实例）被弱引用（WeakReference）持有，这导致了以下内存泄露的情况：
+
+1. **弱引用问题**：当外部不再引用某个ThreadLocal实例时，即使它在ThreadLocalMap中仍然作为键存在，也会被垃圾回收器标记为可回收。即当外部没有强引用指向ThreadLocal对象时，垃圾回收器会回收ThreadLocal对象，但ThreadLocalMap中的Entry仍然保留，因为Entry的键是弱引用，其不会阻止垃圾回收，但Entry的值（即实际存储的数据）仍然是强引用，因此不会被垃圾回收。
+
+::: tip 导致内存泄漏的原因
+当一个ThreadLocal键对象没有强引用而被垃圾回收时，对应的Entry的键变为null。此时，虽然键已经被回收，但是value仍然被Entry强引用着，无法被垃圾回收，导致内存泄漏。
+:::
+
+2. **哈希冲突**：在哈希冲突的情况下，ThreadLocalMap会通过线性探测法寻找下一个空位或匹配的键。如果某个ThreadLocal实例被回收，但其对应的Entry仍留在Map中，那么这个Entry的位置可能会被当作是“已占用”，导致新的Entry无法插入，即使原来的Entry的键已经为null。
+
+
+**JDK 8前后区别**：
+
+- **JDK 8及以前**：ThreadLocalMap中的键是弱引用，这可能导致内存泄露，因为即使ThreadLocal实例被回收，其对应的Entry仍然存在，导致Value无法被回收。
+  
+- **JDK 9及以后**：为了解决这个问题，JDK 9开始，ThreadLocalMap不再使用弱引用，而是直接持有一个强引用指向ThreadLocal实例。同时，它引入了一个新的机制来处理null键的问题，当检测到Entry的键为null时，会主动清理这些Entry，从而减少了内存泄露的风险。此外，JDK 9引入了`cleanSomeSlots`和`expungeStaleEntry`等方法，用于主动清理废弃的Entry。
+
+::: info 如何解决内存泄露问题
+**及时清理**：调用ThreadLocal的`remove`方法来显式地从当前线程的ThreadLocalMap中移除Entry，这是最直接的解决办法。通常在使用完ThreadLocal变量后，尤其是在线程结束或长时间不使用时执行。
+
+:::
+
+最佳实践是主动管理和清理ThreadLocal，确保在不再需要时及时释放资源。因此，应当在不再使用ThreadLocal时调用`remove`方法清理。
+
+
+
+

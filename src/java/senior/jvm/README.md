@@ -1,7 +1,7 @@
 --- 
 
 dir:
-    order: 40
+    order: 10
 index: false
 title: Java虚拟机
 

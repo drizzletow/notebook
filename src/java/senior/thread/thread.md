@@ -472,7 +472,7 @@ Java线程的状态控制（如进入阻塞、等待、休眠状态等）是由J
 
 
 ### 六种线程状态
-实际上Java中线程的生命周期分为6种状态。Thread类有一个实例属性和一个实例方法专门用于保存和获取线程的状态。其中，用于保存线程Thread实例状态的实例属性为threadStatus，以下为Thread类相关属性：
+Java中线程的生命周期分为6种状态。Thread类有一个实例属性和一个实例方法专门用于保存和获取线程的状态。其中，用于保存线程Thread实例状态的实例属性为threadStatus，以下为Thread类相关属性：
 
 ```java
 // Java thread status for tools,  initialized to indicate thread 'not yet started'
@@ -510,7 +510,7 @@ public enum State {
 
   ![Runnable](../vx_images/image-20220223212210867.png)
 
-::: info 前线程进入就绪状态（Runnable）的条件
+::: info 线程进入就绪状态（Runnable）的条件
 1. **线程创建后调用`start()`方法**：当使用`new`关键字创建一个线程对象后，调用该线程的`start()`方法，线程将从新建状态进入就绪状态。
 
 2. **线程从阻塞状态恢复**：如果线程之前因为以下原因之一被阻塞，当这些条件解除时，线程会进入就绪状态：

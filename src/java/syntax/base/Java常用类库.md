@@ -196,13 +196,31 @@ System.out.println(Math.round(-1.6f)); // -2 (-1.6 + 0.5 = -1.1 向下取整为 
 | static double toDegrees(double  angrad) | 将用孤度表示的角转换为近似相等的用角度表示的角                 |
 | staticdouble  toRadians(double angdeg)  | 将用角度表示的角转换为近似相等的用弧度表示的角                 |
 
+
+
+
+
+
 ### 2. BigDecimal
 
-BigDecimal 类支持任何精度的浮点数，可以用来精确计算货币值。
+`BigDecimal`是Java中用于进行高精度浮点数运算的主要类，特别适用于货币计算等对精度有严格要求的场景。
 
+`BigDecimal`提供了多种构造方法来初始化对象，最常用的是通过字符串和double值。推荐使用字符串初始化，因为直接从double转换可能会因为二进制浮点数到十进制的转换不精确而引入误差。
 - BigDecimal(double val)：实例化时将双精度型转换为 BigDecimal 类型
 - BigDecimal(String val)：实例化时将字符串形式转换为 BigDecimal 类型
 
+```java
+import java.math.BigDecimal;
+
+// 使用字符串初始化，推荐
+BigDecimal bd1 = new BigDecimal("123.456");
+
+// 使用double初始化，注意可能的精度丢失
+BigDecimal bd2 = new BigDecimal(123.456);
+```
+
+
+**常用方法**：
 ```java
 BigDecimal add(BigDecimal augend)                                     // 加法操作
 BigDecimal subtract(BigDecimal subtrahend)                            // 减法操作
@@ -210,15 +228,146 @@ BigDecimal multiply(BigDecimal multiplieand)                          // 乘法�
 BigDecimal divide(BigDecimal divisor,int scale,int roundingMode )     // 除法操作
 ```
 
-| 模式名称                        | 说明                                                                    |
-| --------------------------- | --------------------------------------------------------------------- |
-| BigDecimal.ROUND_UP         | 商的最后一位如果大于 0，则向前进位，正负数都如此                                             |
-| BigDecimal.ROUND_DOWN       | 商的最后一位无论是什么数字都省略                                                      |
-| BigDecimal.ROUND_CEILING    | 商如果是正数，按照 ROUND_UP 模式处理；如果是负数，按照 ROUND_DOWN 模式处理                      |
-| BigDecimal.ROUND_FLOOR      | 与 ROUND_CELING 模式相反，商如果是正数，按照 ROUND_DOWN 模式处理； 如果是负数，按照 ROUND_UP 模式处理 |
-| BigDecimal.ROUND_HALF_ DOWN | 对商进行五舍六入操作。如果商最后一位小于等于 5，则做舍弃操作，否则对最后 一位进行进位操作                        |
-| BigDecimal.ROUND_HALF_UP    | 对商进行四舍五入操作。如果商最后一位小于 5，则做舍弃操作，否则对最后一位 进行进位操作                          |
-| BigDecimal.ROUND_HALF_EVEN  | 如果商的倒数第二位是奇数，则按照 ROUND_HALF_UP 处理；如果是偶数，则按 照 ROUND_HALF_DOWN 处理       |
+divide方法参数详解
+
+1. **divisor（被除数）**:
+   - 类型：`BigDecimal`
+   - 含义：这个参数表示除法中的除数。即你要将当前`BigDecimal`实例（作为被除数）除以的值。
+
+2. **scale（小数点后保留位数）**:
+   - 类型：`int`
+   - 含义：指定结果中小数部分的位数。如果结果自然的小数位数少于这个值，结果将被补足到指定的小数位数，补足方式由`roundingMode`决定。如果结果的小数位数超过这个值，按照`roundingMode`进行舍入。
+
+3. **roundingMode（舍入模式）**:
+   - 类型：`RoundingMode`
+   - 含义：决定了当除法运算结果需要舍入时采用的策略。`RoundingMode`是一个枚举类型，提供了多种舍入规则，包括但不限于：
+
+| `RoundingMode`模式名称       | 说明                                                         |
+| --------------------------- | ------------------------------------------------------------ |
+| BigDecimal.ROUND_UP         | 总是向前进位，不论正负。                                          |
+| BigDecimal.ROUND_DOWN       | 直接去除多余小数，不进行进位。                                     |
+| BigDecimal.ROUND_CEILING    | 正数向上舍入，负数向下舍入。                                       |
+| BigDecimal.ROUND_FLOOR      | 正数向下舍入，负数向上舍入。                                       |
+| BigDecimal.ROUND_HALF_DOWN | 五舍六入（正数时5舍去，负数时-5进位）                      |
+| BigDecimal.ROUND_HALF_UP    | 最常见的模式，==四舍五入==，正数时5及以上进位，负数时-5及以下进位。                                                    |
+| BigDecimal.ROUND_HALF_EVEN  | 五舍六入，末位为5时，若前一位为偶数则下舍，奇数则上入（==银行家舍入法==）。 |
+
+`BigDecimal`的`ROUND_HALF_EVEN`舍入模式，也称为“银行家舍入法”，其规则可以概括为：
+
+- **五舍六入**：如果要舍弃的末尾数字大于5（即等于或大于0.5），则向上进位；如果小于5（即0、1、2、3或4），则直接舍去。
+  
+- **偶数法则**：当要舍弃的末尾数字恰好为5时，进位还是舍去取决于它前一位（即保留的最低有效位）的奇偶性：
+  - 如果前一位是偶数（包括0），则舍去该5，使得结果为偶数。这是为了保持数值的连续性，避免在连续的舍入操作中产生系统性的偏移。
+  - 如果前一位是奇数，则将5进位，这样结果仍然是偶数。
+
+简而言之，`ROUND_HALF_EVEN`旨在减少因连续舍入导致的累积误差，同时确保舍入后的结果尽可能为最近的偶数。这一规则广泛应用于金融和统计领域，因为它在长期内可以减少因四舍五入产生的整体偏差。
+
+
+
+**限制精度**：
+
+1. **精确控制小数位数**：当进行算术运算或处理外部输入数据时，直接使用`double`或`float`等浮点类型可能会引入精度损失，造成==无限循环小数==的问题，尤其是在**除法**运算中。而`BigDecimal`的`setScale`方法允许我们明确指定小数点后保留的位数，从而确保计算结果的精度和可预测性。
+
+2. **四舍五入和截断机制**：`setScale`方法提供了多种舍入模式（如`ROUND_HALF_UP`、`ROUND_DOWN`等），可以让我们在限制精度的同时决定如何处理舍入问题。这在处理财务数据时尤为重要，比如总金额的计算，往往需要精确到分，这时使用四舍五入或其他规则来处理小数点后的多余数字就显得非常重要。
+
+3. **避免浮点数陷阱**：基础的浮点类型（如`double`和`float`）在表示某些分数或循环小数时，由于二进制表示的限制，可能会导致近似值和无限循环。`BigDecimal`基于十进制，通过`setScale`方法可以精确地控制数值表示，避免了这些陷阱。
+
+
+**示例说明**：考虑一个简单的除法运算，比如计算10除以3：
+
+```java
+double result = 10.0 / 3.0; // 结果可能是3.3333333333333335，存在无限循环小数的近似问题
+```
+
+在除法计算中控制舍入方式：
+
+```java
+BigDecimal bd1 = new BigDecimal("10");
+BigDecimal bd2 = new BigDecimal("3");
+BigDecimal result = bd1.divide(bd2, 2, BigDecimal.ROUND_HALF_UP);  
+// 结果为3.33，且进行了四舍五入
+```
+
+除了上述的避免计算中可能出现的无限小数问题，还可以直接使用`setScale`方法设置`BigDecimal`的小数位数，可以选择是否进行四舍五入。
+
+```java
+// 限制到两位小数，四舍五入
+BigDecimal rounded = bd1.setScale(2, BigDecimal.ROUND_HALF_UP);
+
+// 限制到两位小数，不进行四舍五入，直接截断
+BigDecimal truncated = bd1.setScale(2, BigDecimal.ROUND_DOWN);
+
+```
+
+
+
+**数值比较**：
+由于浮点数的特殊性，直接使用`equals`方法进行比较可能会因为精度问题得到错误的结果。应该使用`compareTo`方法进行比较，它会返回一个整数，表示两个数的相对大小。
+
+```java
+BigDecimal bd3 = new BigDecimal("123.456");
+BigDecimal bd4 = new BigDecimal("123.457");
+
+int compareResult = bd3.compareTo(bd4);
+if (compareResult < 0) {
+    System.out.println("bd3 小于 bd4");
+} else if (compareResult > 0) {
+    System.out.println("bd3 大于 bd4");
+} else {
+    System.out.println("bd3 等于 bd4");
+}
+```
+
+
+**输出方式**：
+
+`BigDecimal`类提供了`toString()`和`toPlainString()`两个方法用于将`BigDecimal`对象转换为字符串表示。这两个方法在大多数情况下会产生相同的输出，但在处理科学记数法时有所不同。
+
+**区别与使用场景**：
+
+- **区别**：主要区别在于处理大数值或小数值时是否采用科学记数法。`toString()`在数值过大或过小时可能会采用科学记数法，而`toPlainString()`始终使用普通的十进制表示，不使用指数形式。
+  
+- **使用场景**：
+  - 当你需要保持数值的原始表示形式，避免科学记数法带来的可读性问题时，应使用`toPlainString()`。这对于财务报表、数据库存储或任何对格式有严格要求的场景特别重要。
+  - 如果对输出格式没有特殊要求，或者期望在数值过大或过小时自动采用更紧凑的科学记数法表示，可以使用`toString()`。
+
+下面的代码示例展示了如何使用`toString()`和`toPlainString()`方法输出一个大数值的`BigDecimal`实例：
+
+```java
+import java.math.BigDecimal;
+
+public class BigDecimalDemo {
+    public static void main(String[] args) {
+        // 创建一个很大的BigDecimal数值
+        BigDecimal bigNumber = new BigDecimal("123456789012345678901234567890.1234567890");
+
+        // 使用toString()方法
+        String toStringResult = bigNumber.toString();
+        // 预期输出（取决于BigDecimal的具体值和环境，可能会是科学记数法）:
+        // "1.234567890123456789E+28"
+        System.out.println("toString()结果: " + toStringResult);
+
+        // 使用toPlainString()方法
+        String toPlainStringResult = bigNumber.toPlainString();
+        // 预期输出: "123456789012345678901234567890.1234567890"
+        // 不管数值多大，都会以普通十进制形式输出，不会使用科学记数法
+        System.out.println("toPlainString()结果: " + toPlainStringResult);
+    }
+}
+```
+请注意，具体的输出结果（尤其是`toString()`的输出）==可能(仅仅是可能，不是一定)== 会根据JVM的具体实现和运行时环境略有不同，但上述注释中概述的原则保持不变：`toString()`可能会采用科学记数法表示极大或极小的数值，而`toPlainString()`则始终提供完整的十进制字符串表示。
+
+
+::: tip 注意事项
+1. **避免使用double初始化**：直接使用double值初始化`BigDecimal`可能导致精度丢失，优先使用字符串形式。
+2. **精确计算**：进行加减乘除等运算时，确保每个操作数都是`BigDecimal`类型，以保证计算的精确性。
+3. **性能考虑**：虽然`BigDecimal`提供了高度精确的计算能力，但其性能比基本数据类型低，因此在不需要高精度时应考虑使用基本类型。
+4. **线程安全**：`BigDecimal`是不可变的，因此在多线程环境下是线程安全的，可以放心使用。
+:::
+
+
+
+
 
 ## 三 日期日历
 

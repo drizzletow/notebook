@@ -8,7 +8,35 @@ title: Java虚拟机
 ---
 
 
-Java虚拟机（JVM）是运行Java字节码的虚拟计算机。它的设计目标是提供一种跨平台的执行环境，使得Java程序“一次编写，到处运行”。JVM体系结构主要包括以下核心组件：
+
+Java虚拟机（JVM）是运行Java字节码的虚拟计算机。它的设计目标是提供一种跨平台的执行环境，使得Java程序“一次编写，到处运行”。
+
+Java Virtual Machine，JAVA程序的**运行环境**（JAVA二进制字节码的运行环境）
+
+- 一次编写，到处运行
+- 自动内存管理，垃圾回收机制
+- 数组下标越界检查
+
+::: info jdk、jre和jvm
+
+- **JDK (Java Development Kits)** -- Java 开发工具集
+  
+  JDK 是整个 JAVA 的核心，包括了 Java 运行环 境（Java Runtime Environment），一堆 Java 工具（javac/java/jdb 等）和 Java 基的类库（即 Java API 包括 rt.jar），它不提供具体的开发软件，它提供的是无论你用何种开发软件写 Java 程序都必须用到的类库和 Java 语言规范。
+
+- **JRE (Java Runtime Environment)** --Java 运行时环境
+
+- **JVM （Java Virtual Machine）**-- Java虚拟机
+  
+  JVM 可以理解成一个可运行 Java 字节码的虚拟计算机系统， 它有一个解释器组件，可以实现 Java 字节码和计算机操作系统之间的通信 ，对于不同的运行平台，有不同 的 JVM，JVM 屏蔽了底层运行平台的差别，实现了“一次编译，随处运行”。
+:::
+
+![JVM](vx_images/image-20220215135414096.png)
+
+值得注意的是：Java 虚拟机不和包括Java 在内的任何语言绑定，它只与“Class 文件”这种特定的二进制文件格式所关联。
+无论使用何种语言进行软件开发，只要能将源文件编译为正确的Class文件，那么这种语言就可以在Java虚拟机上执行。可以说，统一而强大的Class文件结构，就是Java虚拟机的基石、桥梁。
+
+
+JVM体系结构主要包括以下核心组件：
 
 ::: tip JVM体系结构
 1. **类加载器子系统**：负责查找并加载类文件的二进制数据，转换为JVM可以理解的内部表示形式。
@@ -41,7 +69,13 @@ JVM执行引擎是JVM的核心组件之一，负责将字节码转换为机器�
 
 
 
+Oracle所给的相关规范：https://docs.oracle.com/javase/specs/index.html
 
+[Java SE Specifications](https://docs.oracle.com/javase/specs/)
+
+HTML：[The Java&reg; Virtual Machine Specification](https://docs.oracle.com/javase/specs/jvms/se8/html/index.html)
+
+PDF：https://docs.oracle.com/javase/specs/jvms/se8/jvms8.pdf
 
 
 

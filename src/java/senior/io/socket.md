@@ -11,12 +11,14 @@ HttpURLConnection与HttpClient：深入学习如何利用这些类库进行更�
 
 
 
-## 1. IP、端口和协议
+## 网络通信基础概念 
 
-- **IP地址（Internet Protocol Address）**：是网络中设备的唯一标识
+### IP地址和端口
 
-  - IPv4：每个IP地址长32bit，也就是4个字节。如：11000000 10101000 00000001 01000010，十进制为：192.168.1.66
-  - IPv6：128位地址长度，每16个字节一组，分成8 组十六进制数
+- **IP地址（Internet Protocol Address）**：是网络中设备的唯一标识。IP地址是一种数字标识符，它遵循Internet Protocol（IP）规定的格式。有两种主要的IP地址版本：
+
+  - IPv4：每个IP地址长32bit，也就是4个字节。如：`11000000 10101000 00000001 01000010`，十进制为：`192.168.1.66`
+  - IPv6：128位地址长度，通常表示为 八组==四位十六进制数(每个十六进制4位，所以每16位一组)==。例如`2001:0db8:85a3:0000:0000:8a2e:0370:7334`。
 
   ```java
   // java 关于IP地址的使用：
@@ -26,129 +28,154 @@ HttpURLConnection与HttpClient：深入学习如何利用这些类库进行更�
   System.out.println(inetAddress.getHostName());     // LAPTOP-TS9EH1VR
   System.out.println(inetAddress.getHostAddress());  // 192.168.0.9
   ```
+IP地址使得数据包能够在互联网上被路由和送达目标主机。
 
-  
+<br/>
 
-- **端口（port）**： 设备上应用程序（进程）的唯一标识
+- **端口（port）**： 端口是操作系统中的一种逻辑结构，用于区分不同的网络服务或应用程序。每个端口由一个16位的整数表示，范围从0到65535。端口的作用是：
+    - 允许同一台主机上的多个应用程序同时使用网络。
+    - 指定特定类型的数据应被哪个应用程序接收或发送。
 
-  - 端口用两个字节表示的整数，它的取值范围是0~65535
+常见的端口包括80（HTTP）、443（HTTPS）、22（SSH）、21（FTP）等。端口分为三类：**熟知端口**（0-1023,用于知名的网络服务和应用），**注册端口**（1024-49151，普通应用程序使用），**动态或私有端口**（49152-65535）。
 
-  - 0~1023之间的端口号用于一些知名的网络服务和应用，普通的应用程序需要使用1024以上的端口号
 
     
+### 协议(Protocol)
 
-- **协议（Protocol）**：计算机网络中，连接和通信的规则被称为网络通信协议
+网络协议是一组规则，规定了网络上数据的格式、交换过程和动作序列。它定义了如何建立、维护和终止通信。一些常见的网络协议包括：
 
-  - **UDP协议（User Datagram Protocol)**：用户数据报协议 （不建立逻辑连接，不会确认接收端是否存在或收到）
-  - **TCP协议（Transmission Control Protocol）**：传输控制协议 （建立可靠连接，提供无差错的数据传输）
-
-
-
-
-
-## 2. UDP协议及通信
-
-UDP是无连接通信协议，即在数据传输时，数据的发送端和接收端不建立逻辑连接
-
-- 当一台 计算机向另外一台计算机发送数据时，发送端不会确认接收端是否存在，就会发出数据，同样接收端在 收到数据时，也不会向发送端反馈是否收到数据。 
-
-- 使用UDP协议消耗资源小，通信效率高，通常会用于音频、视频和普通数据的传输
-
-  例如视频会议通常采用UDP协议，因为这种情况即使偶尔丢失一两个数据包，也不会对接收结果产生太大影响
-
-- 由于UDP的面向无连接性，不能保证数据的完整性，因此在传输重要数据时不建议使用UDP协议
+- **TCP (Transmission Control Protocol)**：提供可靠的、面向连接的数据传输服务。
+- **UDP (User Datagram Protocol)**：提供简单的、无连接的数据传输服务，不保证数据的顺序或可靠性。
+- **HTTP (Hypertext Transfer Protocol)**：用于Web通信的标准协议。
+- **HTTPS**：HTTP的安全版本，使用SSL/TLS加密数据。
+- **FTP (File Transfer Protocol)**：用于文件上传和下载。
+- **SMTP (Simple Mail Transfer Protocol)**：用于电子邮件传输。
 
 
 
-**DatagramPacket与DatagramSocket**：
+## Socket网络编程
 
-这两个类所有构成的网络链接是基于UDP协议，是一种不可靠的协议
+在计算机网络中，Socket是网络上两个程序之间进行双向通信的端点。
 
-- DatagramPacket：用于封装、存放数据
+具体来说Socket是一种抽象的==网络通信接口==，它允许一个程序与其他程序通信，无论是在同一台机器上还是通过网络。Socket可以基于不同的协议，如TCP或UDP。
 
-- DatagramSocket：用于接收或发送数据报
+在Java中，`Socket`类和`ServerSocket`类用于实现客户端和服务器之间的通信。具体来说：
+- **Socket类**：代表客户端的连接，用于向服务器发起连接请求。
+- **ServerSocket类**：代表服务器端的监听，用于接受客户端的连接请求。
 
-  
-
-1. DatagramSocket类的构造方法和常用方法：
-
-| 构造方法                                  | 说明                               |
-| ----------------------------------------- | ---------------------------------- |
-| DatagramSocket()                          | 默认使用本地地址和一个随机的端口号 |
-| DatagramSocket(int port)                  | 使用本地地址、并指定端口号         |
-| DatagramSocket(int port, InetAddress iad) | 指定地址和端口号                   |
-| DatagramSocket(SocketAddress sad)         | 使用特定的Socket地址               |
-
-| 常用方法                    | 说明       |
-| --------------------------- | ---------- |
-| send(DatagramPacket dp)     | 发送数据报 |
-| recevie(DatagramPacket  dp) | 接收数据报 |
-| close()                     | 关闭socket |
+Socket提供了读写数据的方法，如`InputStream`和`OutputStream`，用于发送和接收数据。此外，`DatagramSocket`和`DatagramPacket`类用于基于UDP的通信，它们处理数据报包的发送和接收。
 
 
 
-2. DatagramPacket类的常用构造方法：
+### UDP协议及通信
 
-| 常用构造方法                                                 | 说明                                   |
-| ------------------------------------------------------------ | -------------------------------------- |
-| DatagramPacket(byte[] buf,  int length)                      | 用于接收数据 (即数据存于字节数组buf中) |
-| DatagramPacket(byte[] buf, int length, InetAddress address, int port) | 用于封装数据报、发送数据               |
-| DatagramPacket(byte[] buf, int length, SocketAddress address) | 同上，但地址和端口号采用SocketAddress  |
+在Java中，基于UDP协议的Socket编程主要涉及`DatagramSocket`和`DatagramPacket`这两个类。UDP（用户数据报协议）是一种无连接的协议，它不保证数据的顺序和完整性，但是具有低延迟和高效率的特点，适用于不需要可靠传输的场合，如实时音频和视频流。
+
+- **无连接**：在发送数据前无需建立连接。
+- **不可靠**：没有确认机制，数据可能丢失、重复或乱序。
+- **广播和多播**：可以利用UDP进行广播和多播通信。
+
+::: info UDP Socket编程主要类及方法
+
+#### 1. `DatagramSocket`
+`DatagramSocket`类表示一个UDP Socket，它负责接收和发送数据报。
+
+- **构造方法**:
+  - `DatagramSocket()`：创建一个新的未绑定的`DatagramSocket`。
+  - `DatagramSocket(int port)`：创建一个新的`DatagramSocket`并将其绑定到特定的本地端口。
+  - `DatagramSocket(int port, InetAddress address)`：创建一个新的`DatagramSocket`并将其绑定到特定的本地端口和地址。
+
+- **实例方法**:
+  - `send(DatagramPacket p)`：发送一个数据报。
+  - `receive(DatagramPacket p)`：接收一个数据报。
+  - `close()` : 关闭socket 
+
+#### 2. `DatagramPacket`
+`DatagramPacket`类封装了UDP数据报的内容和目的地信息。
+
+- **构造方法**:
+  - `DatagramPacket(byte[] buf, int length)`：创建一个新的数据报，用于接收数据。
+  - `DatagramPacket(byte[] buf, int length, InetAddress address, int port)`：创建一个新的数据报，用于发送数据。
+:::
 
 
+下面是一个简单的Java UDP客户端和服务器示例：
 
-例：使用java实现使用UDP协议的发送、接收客户端
-
-	1. 发送数据客户端：可以一直接收键盘录入并发送数据，q退出
-	2. 接收数据客户端：使用死循环，接收客户端的数据并打印到控制台
-
+UDP服务器端: 服务器监听端口1234，接收来自客户端的消息，并将收到的消息原样发回
 ```java
-public class ReceiveClient {
-    public static void main(String[] args) throws IOException {
-        DatagramSocket datagramSocket = new DatagramSocket(11111);
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
-        while (true) {
-            // 创建用于接收数据的数据包
-            byte[] bytes = new byte[1024];
-            DatagramPacket datagramPacket = new DatagramPacket(bytes, bytes.length);
-            datagramSocket.receive(datagramPacket);
-            // 解析数据并输出
-            String content = new String(datagramPacket.getData(), 0, datagramPacket.getLength());
-            System.out.println(content);
+public class UDPServer {
+    public static void main(String[] args) {
+        try (DatagramSocket socket = new DatagramSocket(1234)) {
+            byte[] buffer = new byte[1024];
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+            
+            System.out.println("Server is ready to receive messages.");
+            
+            while (true) {
+                socket.receive(packet);
+                String received = new String(packet.getData(), 0, packet.getLength());
+                System.out.println("Received from client: " + received);
+                
+                // Echo back to the client
+                InetAddress address = packet.getAddress();
+                int port = packet.getPort();
+                packet = new DatagramPacket(buffer, buffer.length, address, port);
+                socket.send(packet);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 }
 ```
 
+UDP客户端: 客户端则向服务器发送一条消息，并接收服务器的回应。
 ```java
-public class SendClient {
-    public static void main(String[] args) throws Exception {
-        DatagramSocket datagramSocket = new DatagramSocket();
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
+import java.net.InetAddress;
 
-        // 自行封装键盘录入
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-        String content;
-        while ((content = bufferedReader.readLine())!= null){
-            if("q".equals(content)) break;  // 输入q退出
-            // 封装待发送的数据包
-            byte[] bytes = content.getBytes();
-            DatagramPacket datagramPacket = new DatagramPacket(bytes, bytes.length, 
-                                                InetAddress.getByName("127.0.0.1"), 11111);
-            datagramSocket.send(datagramPacket);  //调用DatagramSocket对象的方法发送数据
+public class UDPClient {
+    public static void main(String[] args) {
+        try (DatagramSocket socket = new DatagramSocket()) {
+            byte[] buffer = "Hello, Server!".getBytes();
+            InetAddress address = InetAddress.getByName("localhost");
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, address, 1234);
+            
+            socket.send(packet);
+            System.out.println("Message sent to server.");
+            
+            // Receive response
+            buffer = new byte[1024];
+            packet = new DatagramPacket(buffer, buffer.length);
+            socket.receive(packet);
+            String response = new String(packet.getData(), 0, packet.getLength());
+            System.out.println("Response from server: " + response);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        datagramSocket.close();  //关闭发送端
     }
 }
 ```
 
-![代码运行结果](../vx_images/image-20211019232420186.png)
 
 
 
+### TCP/IP协议及通信
 
+在Java中，基于TCP/IP协议的Socket编程主要是使用`java.net.Socket`和`java.net.ServerSocket`这两个核心类。TCP（传输控制协议）是一种面向连接的、可靠的、基于字节流的通信协议，在网络通信中广泛用于需要高可靠性的数据传输。TCP Socket编程特点如下：
 
-## 3. TCP协议及通信
+- **面向连接**：在数据传输之前必须先建立连接，传输完成后要释放连接。
+- **可靠传输**：提供错误检测和自动重传，保证数据的顺序性和完整性。
+- **全双工**：通信双方都可以同时发送和接收数据。
 
+::: info TCP协议简介
 TCP协议是面向连接的通信协议，即传输数据之前，在发送端和接收端建立逻辑连接，然后再传输数 据，它提供了两台计算机之间可靠无差错的数据传输。
 
 - 在TCP连接中必须要明确客户端与服务器端，由客户端向服务端发出连接请求，每次连接的创建都需要经过“三次握手” 
@@ -156,88 +183,236 @@ TCP协议是面向连接的通信协议，即传输数据之前，在发送端�
   - 第一次握手，客户端向服务器端发出连接请求，等待服务器确认 
   - 第二次握手，服务器端向客户端回送一个响应，通知客户端收到了连接请求 
   - 第三次握手，客户端再次向服务器端发送确认信息，确认连接 
-- 完成三次握手，连接建立后，客户端和服务器就可以开始进行数据传输了。由于这种面向连接的特性， TCP协议可以保证传输数据的安全，所以应用十分广泛。例如上传文件、下载文件、浏览网页等
+:::
+
+完成三次握手，连接建立后，客户端和服务器就可以开始进行数据传输了。由于这种面向连接的特性， TCP协议可以保证传输数据的安全，所以应用十分广泛。例如上传文件、下载文件、浏览网页等
+
+::: info 基于TCP/IP协议的Socket编程主要类及方法
+
+#### 1. `ServerSocket`
+`ServerSocket`类用于创建服务器端的Socket，它监听特定端口上的连接请求。
+
+- **构造方法**:
+  - `ServerSocket(int port)`：创建一个绑定到特定端口的`ServerSocket`。
+  - `ServerSocket(int port, int backlog)`：创建一个绑定到特定端口的`ServerSocket`，并指定连接队列的最大长度。
+  
+- **实例方法**:
+  - `Socket accept()`：监听并接受一个来自客户端的连接请求，该方法是阻塞的，直到一个客户端连接。
+
+#### 2. `Socket`
+`Socket`类用于创建客户端的Socket，用于与服务器建立连接。
+
+- **构造方法**:
+  - `Socket(String host, int port)`：创建一个新的Socket并尝试连接到给定的主机和端口。
+  
+- **实例方法**:
+  - `OutputStream getOutputStream()`：获取Socket的输出流，用于发送数据。
+  - `InputStream getInputStream()`：获取Socket的输入流，用于接收数据。
+  - `void close()`：关闭Socket，释放与之关联的所有资源。
+:::
 
 
+下面是一个简单的Java TCP服务器和客户端的示例代码：
 
-**客户端—Socket类**：
-
-| 构造方法                              | 说明             |
-| ------------------------------------- | ---------------- |
-| Socket(InetAddress address, int port) | 指定IP和端口号   |
-| Socket(String host, int port)         | 指定主机和端口号 |
-
-| 常用方法                       | 说明       |
-| ------------------------------ | ---------- |
-| InputStream getInputStream()   | 返回输入流 |
-| OutputStream getOutputStream() | 返回输出流 |
-
-
-
-**服务器端—ServerSocket类**：
-
-| 构造方法                | 说明                             |
-| ----------------------- | -------------------------------- |
-| ServletSocket(int port) | 创建绑定到指定端口的服务器Socket |
-
-| 常用方法        | 说明                             |
-| --------------- | -------------------------------- |
-| Socket accept() | 监听要连接到此的Socket、并接收它 |
-
-
-
-例：使用Socket和ServerSocket实现数据的发送、接收
-
- 	1. 发送数据（客户端）：可以一直接收键盘录入并发送数据，q退出
- 	2. 接收数据（服务端）：接收客户端的数据并打印到控制台
-
+TCP服务器端：服务器监听端口1234，并为每个连接的客户端创建一个新的线程（在实际代码中通常使用线程池）。当任一端发送“bye”时，连接将被关闭。
 ```java
-public class Server {
-    public static void main(String[] args) throws IOException {
-        ServerSocket serverSocket = new ServerSocket(11111);
+import java.io.*;
+import java.net.*;
 
-        Socket socket = serverSocket.accept();  // 
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-        String content;
-        while ((content = bufferedReader.readLine()) != null){
-            System.out.println(content);
+public class TCPServer {
+    public static void main(String[] args) {
+        try (ServerSocket serverSocket = new ServerSocket(1234)) {
+            System.out.println("Server started. Listening on port 1234...");
+
+            while (true) {
+                Socket clientSocket = serverSocket.accept();
+                System.out.println("New client connected: " + clientSocket);
+
+                // 创建一个新的线程来处理客户端的连接
+                Thread clientHandler = new Thread(() -> {
+                    try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+                         PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
+                        String inputLine;
+                        while ((inputLine = in.readLine()) != null) {
+                            System.out.println("Received from client: " + inputLine);
+                            if ("bye".equalsIgnoreCase(inputLine)) {
+                                break;
+                            }
+                            out.println("Echo: " + inputLine);
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    } finally {
+                        try {
+                            clientSocket.close();
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+                // 启动线程
+                clientHandler.start();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        serverSocket.close();
     }
 }
 ```
-- `serverSocket.accept()` 方法会阻塞，直到有新的连接请求到达，然后为这个连接创建一个Socket对象并返回，随后服务器代码开始与这个客户端进行通信。
-
-- 如果一个客户端已经连接，服务器会卡在 `bufferedReader.readLine()` 处等待来自该客户端的输入.
-    `readLine()`方法会读取一行文本直到遇到行结束符（通常是换行符`\n`），如果没有遇到行结束符或达到流的末尾（`EOF`），它会阻塞并等待更多数据到来。因此，服务器在没有完整行数据到达前会暂停在`readLine()`调用处。
 
 
+TCP客户端：客户端连接到服务器并可以发送任意数量的消息，服务器将这些消息回显给客户端。当任一端发送“bye”时，连接将被关闭。
 ```java
-public class Client {
-    public static void main(String[] args) throws IOException {
-        Socket socket = new Socket("192.168.0.9", 11111);
+import java.io.*;
+import java.net.*;
 
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
-        BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(socket.getOutputStream()));
-        String content;
-        while ((content = bufferedReader.readLine()) != null){
-            if("q".equals(content)) break;
-            bufferedWriter.write(content);
-            bufferedWriter.newLine();
-            bufferedWriter.flush();
+public class TCPClient {
+    public static void main(String[] args) {
+        try (Socket socket = new Socket("localhost", 1234);
+             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+             BufferedReader stdIn = new BufferedReader(new InputStreamReader(System.in))) {
+            System.out.println("Connected to server.");
+            
+            String fromServer;
+            String fromUser;
+            while ((fromUser = stdIn.readLine()) != null) {
+                out.println(fromUser);
+                out.flush();
+                if ("bye".equalsIgnoreCase(fromUser)) {
+                    break;
+                }
+                fromServer = in.readLine();
+                System.out.println("Received from server: " + fromServer);
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        socket.close();
     }
 }
 ```
 
-![客户端连接示例](../vx_images/image-20211020020651130.png)
+当前的服务器端代码中，每当一个客户端连接时，服务器就会创建一个新的线程来处理这个连接。这样，即使有多个客户端同时连接，服务器也能有效地处理每个客户端的请求。然而，这种实现可能会消耗大量的系统资源，特别是在大量客户端连接的情况下，因为每个连接都会启动一个新的线程。在生产环境中，更推荐使用线程池来限制并发线程的数量，从而更有效地管理资源。
 
 
-当前的服务器端代码中，仅能接受了一个客户端的连接，并没有设计成能够同时处理多个客户端连接的能力，要实现能够同时处理多个客户端连接的服务器，通常需要采用以下策略之一：
 
-1. **多线程模型**：每当`accept()`方法接收到一个新连接时，创建一个新的线程（或使用线程池）来处理这个连接的读写操作，主线程则立即回到`accept()`等待下一个连接。
+### NIO和AIO
 
-2. **非阻塞I/O（NIO）或多路复用（如select/poll）**：使用Java NIO的`Selector`，可以在单一线程中管理多个通道（Channels）的读写操作，而无需为每个连接创建单独的线程。
+NIO（Non-blocking I/O）和AIO（Asynchronous I/O）是Java中用于提高I/O操作性能的两种高级机制，它们可以显著提升在网络编程中的并发能力和响应速度。
 
-3. **异步I/O（AIO）**：在Java中使用AIO模型，可以注册通道的读写事件，当事件就绪时通过回调处理，这也是非阻塞且高效的处理方式。
+- **非阻塞I/O（NIO）或多路复用（如select/poll）**：使用Java NIO的`Selector`，可以在单一线程中管理多个通道（Channels）的读写操作，而无需为每个连接创建单独的线程。
+
+- **异步I/O（AIO）**：在Java中使用AIO模型，可以注册通道的读写事件，当事件就绪时通过回调处理，这也是非阻塞且高效的处理方式。
+
+NIO（Non-blocking I/O）引入了通道（Channel）和缓冲区（Buffer）的概念，其中通道可以是文件、网络连接或其他数据源，而缓冲区则用于存储待处理的数据。NIO的主要优点是支持非阻塞I/O，即在没有数据可读或写时，不会阻塞线程，从而提高了服务器的并发能力。
+
+使用NIO优化服务器代码：
+1. **使用`ServerSocketChannel`**：替代传统的`ServerSocket`，创建一个非阻塞的`ServerSocketChannel`。
+2. **使用`Selector`**：`Selector`用于监控多个`Channel`的I/O状况，当某个`Channel`准备好进行读写操作时，`Selector`会通知相应的线程去处理。
+3. **使用`ByteBuffer`**：用于读取和写入数据，代替`InputStream`和`OutputStream`。
+
+```java
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.nio.ByteBuffer;
+import java.nio.channels.SelectionKey;
+import java.nio.channels.Selector;
+import java.nio.channels.ServerSocketChannel;
+import java.nio.channels.SocketChannel;
+import java.util.Iterator;
+import java.util.Set;
+
+public class NioTcpServer {
+    private final Selector selector;
+    private final ServerSocketChannel serverChannel;
+    private final ByteBuffer buffer = ByteBuffer.allocate(1024);
+
+    public NioTcpServer(int port) throws IOException {
+        selector = Selector.open();
+        serverChannel = ServerSocketChannel.open();
+        serverChannel.socket().bind(new InetSocketAddress(port));
+        serverChannel.configureBlocking(false);
+        serverChannel.register(selector, SelectionKey.OP_ACCEPT);
+    }
+
+    public void listen() throws IOException {
+        while (!Thread.currentThread().isInterrupted()) {
+            selector.select();
+            Set<SelectionKey> keys = selector.selectedKeys();
+            Iterator<SelectionKey> it = keys.iterator();
+            while (it.hasNext()) {
+                SelectionKey key = it.next();
+                if (key.isAcceptable()) {
+                    registerForRead((ServerSocketChannel) key.channel());
+                } else if (key.isReadable()) {
+                    readData(key);
+                }
+                it.remove();
+            }
+        }
+    }
+
+    private void registerForRead(ServerSocketChannel channel) throws IOException {
+        SocketChannel clientChannel = channel.accept();
+        clientChannel.configureBlocking(false);
+        clientChannel.register(selector, SelectionKey.OP_READ);
+    }
+
+    private void readData(SelectionKey key) throws IOException {
+        SocketChannel channel = (SocketChannel) key.channel();
+        buffer.clear();
+        int numRead = channel.read(buffer);
+        if (numRead > 0) {
+            buffer.flip();
+            byte[] data = new byte[numRead];
+            buffer.get(data);
+            System.out.println("Received: " + new String(data));
+            writeData(channel, data);
+        }
+    }
+
+    private void writeData(SocketChannel channel, byte[] data) throws IOException {
+        buffer.clear();
+        buffer.put(data);
+        buffer.flip();
+        channel.write(buffer);
+    }
+
+    public static void main(String[] args) throws IOException {
+        new NioTcpServer(1234).listen();
+    }
+}
+```
+
+
+AIO（Asynchronous I/O）是NIO的扩展，提供了真正的异步I/O操作。在AIO中，你可以发起一个I/O操作并立即返回，当操作完成时，系统会通知你的程序。这对于高并发的服务器特别有用。
+
+使用AIO优化服务器代码：
+
+1. **使用`AsynchronousServerSocketChannel`**：创建一个监听特定端口的异步服务器通道。
+2. **使用`Future`**：发起异步操作时，返回一个`Future`对象，可以用来检查操作是否完成或获取结果。
+
+由于AIO在Java中是通过JDK 7引入的，其API可能不如NIO成熟和广泛使用，但在某些场景下，特别是高并发场景，AIO可以提供更好的性能。
+
+注意，NIO和AIO的实现都比较复杂，需要对Java的I/O模型有深入的理解。在实际应用中，可能还需要结合线程池和其他并发工具来进一步优化性能。
+
+
+
+## 网络编程注意事项
+
+除了基本的错误与异常处理、多线程及线程池的使用外，还应该关注以下事项：
+
+::: info 网络编程注意事项及优化思路
+#### 安全与加密
+- **SSL/TLS**：使用安全套接字层或传输层安全协议来加密数据传输。
+- **SSLSocketFactory/SSLSocket**：用于创建安全的Socket连接。
+
+#### 实时应用与性能考虑
+- **非阻塞IO与NIO**：新的IO API，提供了非阻塞模式，提高了高并发场景下的性能。
+- **Socket选项**：如SO_TIMEOUT，设置Socket的超时时间。
+
+#### 网络编程最佳实践
+- **资源管理**：确保关闭所有打开的Socket和Stream。
+- **编码标准**：选择合适的字符集，如UTF-8。
+- **协议设计**：定义清晰的数据格式和协议规则。
+:::

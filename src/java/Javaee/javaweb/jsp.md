@@ -1,7 +1,7 @@
 ---
 
 order: 25
-title:  JSP
+title:  JavaServer Pages
 shortTitle: JavaServer Pages
 
 ---

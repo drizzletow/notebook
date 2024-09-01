@@ -1,7 +1,7 @@
 ---
 
 order: 30
-title:  Spring中的设计模式
+title:  Spring设计模式
 
 ---
 

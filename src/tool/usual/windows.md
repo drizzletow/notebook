@@ -7,9 +7,11 @@ icon: windows
 ---
 
 
-## 一 CMD命令
+## 一 CMD常用命令
 
-###  1. 目录和文件
+###  目录和文件
+
+1. 切换目录，产看目录文件
 
 ```bash
 
@@ -17,8 +19,112 @@ cd directory            # 切换目录
 
 d:                      # 切换到 d 盘
 
+cd /d e:\software       # 跳转到其他硬盘的其他文件夹，注意此处必须加/d参数。否则无法跳转。
+
+dir                     # 查看当前目录下的文件，类似于linux下的ls
 ```
 
+2. 创建和删除目录
+
+```bash
+# 创建目录
+md 目录名（文件夹）
+
+# 删除目录（rd 或 rmdir）
+rd 目录名（文件夹）
+# 强制删除文件文件夹和文件夹内所有文件
+rd /s /q 盘符:\某个文件夹
+```
+::: info rd 或 rmdir 命令参数
+- `/S`：删除指定目录及其所有子目录。
+- `/Q`：安静模式，与`/S`一起使用时不会提示确认信息。
+:::
+
+3. 文件操作（复制，移动，删除）
+
+```bash
+# 复制文件：把一个文件拷贝到另一个地方。
+copy 路径\文件名 路径\文件名 
+
+# 移动文件：把一个文件移动（就是剪切+复制）到另一个地方
+move 路径\文件名 路径\文件名 
+
+# 删除文件(这个是专门删除文件的，不能删除文件夹)
+del 文件名
+# 强制删除文件，文件名必须加文件后缀名
+del /f /s /q 盘符:\文件名 
+```
+::: info del命令参数
+- `/F`：强制删除只读文件。
+- `/Q`：安静模式，在删除文件时不提示用户确认。
+- `/P`：删除每个文件之前提示用户确认。
+- `/S`：删除指定目录及其子目录下的匹配文件。
+- `/A`：根据属性选择要删除的文件。例如：`/A:S` 表示删除隐藏文件。
+:::
+
+
+
+<br/>
+
+### 进程和服务
+
+```bash
+netstat -ano | findstr 8102  # 查找指定端口号的进程信息（进程ID）
+
+taskkill /pid 45768 /f       # 强杀 指定id（45768）的进程
+```
+
+::: info taskkill命令参宿解释
+`/P` [password] 为提供的用户上下文指定密码。如果忽略，提示输入。
+`/F` 指定要强行终止的进程。
+`/FI` filter 指定筛选进或筛选出查询的的任务。
+`/PID` process id 指定要终止的进程的PID。
+`/IM` image name 指定要终止的进程的映像名称。通配符 '*'可用来指定所有映像名。
+`/T` Tree kill: 终止指定的进程和任何由此启动的子进程。
+`/?` 显示帮助/用法。
+:::
+
+
+### 网络相关命令
+
+```bash
+# 用来测试网络是否畅通
+ping ip(主机名)
+
+# 查看本机ip
+ipconfig
+```
+
+
+
+### 其他命令
+
+1. 帮助命令
+
+使用help命令，查看所有的dos命令
+
+```bash
+help
+```
+
+找到命令之后，使用 `命令+ /?` 来查看该命令下的其他属性
+
+```bash
+# 例如：查看 rd 命令的使用及参数解释
+rd  /?       
+```
+
+
+2. 辅助符号或命令
+
+```bash
+# | 代表前一个的输出代表后一个的输入
+netstat -ano|find "192.168.1.10"    # 查找特定ip的网络连接及进程号
+
+# 重定向输出符号 > 和 >>
+jstack 12912 >d:/s.txt              #  > 重定向输出并覆盖源文件 (打印线程到指定文件) 
+echo hello >>c:\1.txt               #  >> 重定向输出追加到文件末尾 (在1.txt文件末尾加上hello)
+```
 
 
 
@@ -29,29 +135,172 @@ code
 explore
 
 
+<br/>
 
 
+
+## 二 PowerShell
+
+GitHub：https://github.com/PowerShell/PowerShell/releases/
+
+也可以直接去官网下载： 
+
+https://docs.microsoft.com/zh-cn/powershell/scripting/install/installing-powershell-on-windows
+
+<br>
+
+
+### 1. SSH
+
+使用SSH连接到远程服务器，前提是服务器已安装并启用SSH服务
+
+```shell
+
+# 命令格式：ssh username@hostip 如：
+
+ssh root@192.168.5.150          # 输入密码即可
+
+```
 
 <br/>
 
-### 2. 进程和服务
+###  2. new-guid
+
+
+
+## 三 WSL/WSL2
+
+[运行 WSL 2 的要求](https://learn.microsoft.com/zh-cn/windows/wsl/install-manual#step-2---check-requirements-for-running-wsl-2)：
+- win10
+    - 对于 x64 系统：版本 1903 或更高版本，内部版本为 18362.1049 或更高版本。
+    - 对于 ARM64 系统：版本 2004 或更高版本，内部版本为 19041 或更高版本。
+- win11
+
+
+[WSL 1 和 WSL 2 的比较](https://learn.microsoft.com/zh-cn/windows/wsl/compare-versions)
+
+
+### 安装和配置
+
+1. 启用子系统相关功能
+
+在控制面版中打开 `启用或关闭windows功能` （或者直接在搜索框搜索`功能`），勾选 `适用于Linux的Windows子系统` 和 `虚拟机平台` 。也可以通过管理员身份打开 PowerShell，然后输入以下命令：
 
 ```bash
+dism.exe /online /enable-feature /featurename:Microsoft-Windows-Subsystem-Linux /all /norestart
+dism.exe /online /enable-feature /featurename:VirtualMachinePlatform /all /norestart
+```
 
-netstat -ano | findstr 8102  # 查找指定端口号的进程信息（进程ID）
+完成后重启计算机即可。成功启用功能后即可安装子系统,以及使用`wsl`相关命令
 
-taskkill /pid 45768 /f       # 强杀 指定id（45768）的进程
+2. 安装Linux子系统
 
+在微软商店中搜索WSL，选择所需的Linux发行版（如Ubuntu20）下载安装，安装完成启动子系统时如果出现一些`??????????`之类的符号，则需要升级Linux内核：
+
+```bash
+wsl --update
+```
+
+此时可以通过点击安装完成的Linux系统图标启动Linux子系统
+
+根据提示设置用户名及密码即可（Ubuntu子系统的默认root密码为空）
+
+3. 修改hostname
+
+进入Linux子系统后，修改配置文件：
+
+```bash
+sudo vim /etc/wsl.conf
+```
+
+添加下列内容：
+
+```bash
+[network]
+hostname=自己想要的主机名
+generateHosts=false
+```
+
+`:wq`保存退出
+
+修改后需要重启子系统才生效，在Windows终端中使用下列命令：
+
+```bash
+wsl --shutdown
+
+wsl
+```
+
+
+
+### WSL常用命令
+
+1. wsl版本及配置信息
+
+```bash
+wsl --version   # WSL及其组件的版本信息
+
+wsl --status    # wsl配置信息
+```
+
+
+2. 查看当前所有已安装的子系统及运行状态
+
+```bash
+wsl -l -v    # 简写
+wsl --list --verbose
+```
+
+3. 设置默认wsl版本(1或2)和默认子系统(即使用wsl命令直接启动的系统)
+
+```bash
+wsl --set-default-version <Version>       # <Version> 为 1或2
+
+wsl --set-default <Distribution Name>     # 设置默认 Linux 发行版，简写为
+wsl -s <Distribution Name>
+
+```
+
+4. 已安装子系统的WSL版本修改
+
+```bash
+wsl --set-version Ubuntu-20.04 2          # 将 Ubuntu 20.04 发行版设置为使用 WSL 2
+```
+
+
+
+更多命令参照官网介绍：[WSL基本命令](https://learn.microsoft.com/zh-cn/windows/wsl/basic-commands)
+
+
+
+### 启动和关闭
+
+启动并进入某个子系统：
+
+```bash
+wsl                           # 进入默认子系统
+wsl -d <Distri> <command>     # 进入名为<Distri>的子系统
+
+# 还可以指定用户 ，<Username> 如 root
+wsl -d <Distri> --user <Username> <command>
+```
+
+关闭，卸载某个子系统：
+
+```bash
+wsl --terminate <Distri>    # 关闭某个子系统, 或简写为
+wsl -t <Distri>
+
+wsl --shutdown              # 关闭所有子系统
+
+wsl --unregister <Distri>   # 卸载某个子系统
 ```
 
 
 
 
-<br/>
 
-
-
-## 二 Windows Terminal
+## 四 Windows Terminal
 
 Windows 终端概述 ：https://docs.microsoft.com/zh-cn/windows/terminal/
 
@@ -338,39 +587,29 @@ ssh -i  C:\Users\Administrator/.ssh/id_rsa root@192.168.10.11
 
 <br>
 
-## 三 PowerShell
-
-GitHub：https://github.com/PowerShell/PowerShell/releases/
-
-也可以直接去官网下载： 
-
-https://docs.microsoft.com/zh-cn/powershell/scripting/install/installing-powershell-on-windows
-
-<br>
 
 
-### 1. SSH
 
-使用SSH连接到远程服务器，前提是服务器已安装并启用SSH服务
 
-```shell
+## 五 常见问题及解决方法
 
-# 命令格式：ssh username@hostip 如：
 
-ssh root@192.168.5.150          # 输入密码即可
+### 禁止运行脚本
 
+例如：终端显示“pnpm : 无法加载文件 C:\Program Files\nodejs\npm.ps1，因为在此系统上禁止运行脚本”
+
+使用管理员方式打开 `PowerShell`:
+
+```bash
+# 查询状态, 返回 Restricted 说明状态是禁止的
+get-ExecutionPolicy
+
+# 更改状态
+set-ExecutionPolicy RemoteSigned
+
+# 如果提示需要管理员权限，可加参数运行
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
 ```
-
-<br/>
-
-###  2. new-guid
-
-
-
-
-
-
-
 
 
 

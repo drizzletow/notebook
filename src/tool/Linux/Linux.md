@@ -813,6 +813,136 @@ kill -15 pid     # 让内核通知应用主动关闭
 
 ### 2. Linux服务管理
 
+在Linux系统中，服务管理是一个非常重要的任务，涉及到启动、停止、重启、查看状态等操作。传统的Linux系统使用 `init` 作为初始化进程，而近年来，越来越多的Linux发行版转而使用 `systemd` 作为初始化系统。
+
+- **init 系统**：服务通过 `/etc/init.d/` 下的脚本进行管理，命令相对简单。
+- **systemd 系统**：服务通过 `systemctl` 命令进行管理，提供了更多的功能和灵活性。
+
+如果不确定当前系统使用的是哪种初始化系统，可以通过以下命令来确认：
+
+```sh
+cat /proc/1/comm
+```
+
+如果输出是 `systemd`，则当前系统使用的是 `systemd` 初始化系统。如果输出是 `sysvinit` 或其他类似的字符串，则当前系统使用的是传统的 `init` 系统。
+
+### 1. init 系统下的服务管理
+
+在使用 `init` 系统的传统Linux发行版中，服务通常通过 `/etc/init.d/` 目录下的脚本来控制。服务脚本通常遵循一定的命名规则，例如 `service_name.sh`。
+
+#### 常见命令：
+
+- **启动服务**：
+  ```sh
+  /etc/init.d/service_name start
+  ```
+
+- **停止服务**：
+  ```sh
+  /etc/init.d/service_name stop
+  ```
+
+- **重启服务**：
+  ```sh
+  /etc/init.d/service_name restart
+  ```
+
+- **重新加载配置文件**：
+  ```sh
+  /etc/init.d/service_name reload
+  ```
+
+- **查看服务状态**：
+  ```sh
+  /etc/init.d/service_name status
+  ```
+
+- **设置服务开机启动**：
+  在 `init` 系统下，可以使用 `chkconfig`（对于支持 `chkconfig` 的发行版）或手动编辑 `/etc/rc.local` 文件来设置服务开机启动。
+
+  ```sh
+  chkconfig --add service_name
+  chkconfig service_name on
+  ```
+
+### 2. systemd 系统下的服务管理
+
+`systemd` 是一种现代化的初始化系统，提供了更为丰富的功能和更精细的服务控制。在使用 `systemd` 的Linux发行版中，服务由 `.service` 文件控制，通常位于 `/lib/systemd/system/` 或 `/etc/systemd/system/` 目录下。
+
+#### 常见命令：
+
+- **启动服务**：
+  ```sh
+  sudo systemctl start service_name.service
+  ```
+
+- **停止服务**：
+  ```sh
+  sudo systemctl stop service_name.service
+  ```
+
+- **重启服务**：
+  ```sh
+  sudo systemctl restart service_name.service
+  ```
+
+- **重新加载配置文件**：
+  ```sh
+  sudo systemctl reload-or-restart service_name.service
+  ```
+
+- **查看服务状态**：
+  ```sh
+  sudo systemctl status service_name.service
+  ```
+
+- **设置服务开机启动**：
+  ```sh
+  sudo systemctl enable service_name.service
+  ```
+
+- **取消服务开机启动**：
+  ```sh
+  sudo systemctl disable service_name.service
+  ```
+
+- **查看所有已启用的服务**：
+  ```sh
+  sudo systemctl list-unit-files --type=service --state=enabled
+  ```
+
+- **查看所有已禁用的服务**：
+  ```sh
+  sudo systemctl list-unit-files --type=service --state=disabled
+  ```
+
+### 示例
+
+假设我们要管理名为 `nginx` 的服务。
+
+#### 在 `init` 系统下：
+
+```sh
+/etc/init.d/nginx start
+/etc/init.d/nginx stop
+/etc/init.d/nginx restart
+/etc/init.d/nginx status
+```
+
+#### 在 `systemd` 系统下：
+
+```sh
+sudo systemctl start nginx.service
+sudo systemctl stop nginx.service
+sudo systemctl restart nginx.service
+sudo systemctl status nginx.service
+sudo systemctl enable nginx.service
+sudo systemctl disable nginx.service
+```
+
+
+
+
 
 
 

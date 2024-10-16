@@ -9,6 +9,6 @@ export const enNavbar = navbar([
   {
     text: "Theme",
     icon: "book",
-    link: "https://theme-hope.vuejs.press/",
+    link: "/tool/theme.md",
   },
 ]);

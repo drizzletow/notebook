@@ -1,6 +1,6 @@
 --- 
 dir:
-    order: -1
+    order: 20
 index: false
 title: SQL及常用数据库
 icon: db

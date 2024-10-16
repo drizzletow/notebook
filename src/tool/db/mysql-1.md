@@ -102,6 +102,29 @@ mysqld -remove mysql
 
 
 
+### WSL2-Ubuntu
+
+微软官网示例：https://learn.microsoft.com/zh-cn/windows/wsl/tutorials/wsl-database
+
+
+**问题一**：启动MySQL服务时提示：`su: warning: cannot change directory to/nonexistent...`
+
+主要原因是MySQL 用户的主目录问题：
+
+先停止MySQL服务：`sudo systemctl stop mysql` 或 `sudo service mysql stop`
+
+```bash
+getent passwd mysql                      
+# 查看当前用户的主目录：mysql:x:113:120:MySQL Server,,,:/nonexistent:/bin/false
+
+sudo usermod -d /var/lib/mysql/ mysql    # 修改用户的主目录
+# 修改主目录之前，请确保 /var/lib/mysql/ 目录已经存在，并且是 MySQL 数据文件的正确存放位置
+```
+修改完后启动MySQL服务：`sudo service mysql start`
+
+
+更多问题参照：[WSL2 Ubuntu 安装Mysql 避坑记录](https://zhuanlan.zhihu.com/p/654729453)
+
 
 ### Linux手动安装
 
@@ -289,10 +312,6 @@ rm -rf /usr/my.cnf
 
 通过以上几步，mysql应该已经完全卸载干净了.
 ```
-
-
-
-<br/>
 
 
 
@@ -771,6 +790,171 @@ interactive-timeout
 
 
 
+### 重置root密码
+
+无论是在 MySQL 5.7 还是 MySQL 8.0 中，设置密码的方法基本相同：
+
+1. **登录 MySQL**
+
+   首先以 root 用户登录 MySQL：
+
+   ```sh
+   sudo mysql -u root -p
+   ```
+
+2. **设置密码**
+
+   使用 `ALTER USER` 语句设置 root 用户的密码：
+
+   ```sql
+   ALTER USER 'root'@'localhost' IDENTIFIED BY '新密码';
+   ```
+
+   或者，如果你需要为其他用户设置密码：
+
+   ```sql
+   CREATE USER '新用户名'@'localhost' IDENTIFIED BY '新密码';
+   ```
+
+   MySql5.7还可以使用下列方式：
+
+    ```bash
+    SET PASSWORD FOR 'username'@'localhost' = PASSWORD('新密码');
+    # 或者
+    SET PASSWORD FOR 'username'@'localhost' = '新密码';
+    ```
+
+3. **刷新权限**
+
+   为了确保新设置的密码立即生效，需要刷新权限：
+
+   ```bash
+   FLUSH PRIVILEGES;
+   ```
+
+4. **退出 MySQL**
+
+   退出 MySQL 命令行：
+
+   ```bash
+   EXIT;
+   ```
+
+
+
+### MySql常用命令
+
+MySQL 客户端提供了丰富的命令来帮助你管理数据库、执行 SQL 语句、查看数据库信息等：
+
+**1. 连接 MySQL 服务器**
+
+```sh
+mysql -u username -p
+```
+
+- `-u`: 指定用户名。
+- `-p`: 提示输入密码。
+
+附加参数:
+
+```sh
+mysql -u username -p -h hostname -P port
+```
+
+- `-h`: 指定服务器的主机名或 IP 地址。
+- `-P`: 指定 MySQL 服务器的端口号，默认为 `3306`。
+
+显示当前连接的 MySQL 版本：
+```sql
+SELECT VERSION();           
+```
+帮助命令和退出客户端：
+```bash
+HELP command_name;   --  显示帮助信息
+
+EXIT;                -- 退出 MySQL 客户端 还可以使用 QUIT;
+```
+
+**2. 使用数据库**
+
+查看数据库列表，并选择需要使用的数据库：
+```sql
+SHOW DATABASES;        -- 显示数据库列表
+
+USE database_name;     -- 选择数据库
+
+SELECT DATABASE();     -- 查看当前使用的数据库
+```
+
+
+创建/ 删除数据库：
+
+```sql
+CREATE DATABASE database_name;
+
+DROP DATABASE database_name;
+```
+
+
+查看表结构:
+
+```sql
+DESCRIBE table_name;
+
+SHOW COLUMNS FROM table_name;
+
+DROP TABLE table_name;     -- 删除表
+```
+
+
+**3. 当前会话用户**
+
+```sql
+SELECT USER();                -- 查看当前会话的用户
+
+SELECT CURRENT_USER();        -- 查看当前会话的用户名和主机
+
+SHOW STATUS;                  -- 查看当前会话的状态
+SHOW SESSION STATUS;          -- 显示当前会话的会话状态
+SHOW GLOBAL STATUS;           -- 显示当前会话的全局状态
+
+SHOW VARIABLES;               -- 查看当前会话的变量
+SHOW SESSION VARIABLES;       --显示当前会话的会话变量
+SHOW GLOBAL VARIABLES;        -- 显示当前会话的全局变量
+
+
+SHOW WARNINGS;                -- 查看当前会话的警告
+SHOW ERRORS;                  --  查看当前会话的错误
+
+
+SET SESSION variable_name = value;   -- 设置会话变量
+SET @variable_name = value;          -- 设置会话变量
+SET GLOBAL variable_name = value;    -- 设置全局变量
+
+SHOW VARIABLES LIKE 'sql_mode';      -- 查看当前会话的 SQL 模式
+SET sql_mode = 'mode_value';         -- 设置当前会话的 SQL 模式
+
+SHOW VARIABLES LIKE 'character_set_client';    -- 查看当前会话的字符集
+SET NAMES 'charset';                           -- 设置当前会话的字符集
+
+SHOW VARIABLES LIKE 'collation_connection';    -- 查看当前会话的编码
+SET collation_connection = 'encoding';         -- 设置当前会话的编码
+```
+
+
+**4. sql文件**
+
+```sql
+SOURCE file_path;   -- 执行 SQL 文件
+
+-- 导出数据到文件
+SELECT * INTO OUTFILE '/path/to/file.csv' FIELDS TERMINATED BY ',' ENCLOSED BY '"'
+ESCAPED BY '\\' LINES TERMINATED BY '\n' FROM table_name;
+```
+
+
+
+
 
 ## DCL用户权限管理
 
@@ -778,43 +962,143 @@ DCL（Data Control Language），   数据控制语言，用来定义**访问权
 
 ### 创建/删除用户
 
-```SQL
--- 创建用户
-create user 用户名@指定ip identified by 密码;
-# 例：（ % 表示任意IP均可登陆）
-create user test123@localhost IDENTIFIED by '123123';
-create user test456@10.4.10.18 IDENTIFIED by '123123';
-create user test789@'%' IDENTIFIED by '123123';
+**1. 创建用户**: 在 MySQL 中创建用户的基本语法如下：
 
--- 删除用户
-drop user 用户名@IP;
--- 例：
-drop user test123@localhost;
+```sql
+CREATE USER 'username'@'host' IDENTIFIED BY 'password';
+```
+
+- `username`：用户名。
+- `host`：用户允许连接的主机地址。可以是具体的 IP 地址、域名或者 `'%'` 表示任何主机。
+- `password`：用户的密码。
+
+示例: 创建一个名为 `newuser` 的用户，允许从任何主机连接，并设置密码为 `newpass`：
+
+```sql
+CREATE USER 'newuser'@'%' IDENTIFIED BY 'newpass';
+```
+
+**2. 删除用户**: 删除用户的语法如下：
+
+```sql
+DROP USER 'username'@'host';
+```
+
+示例: 删除名为 `newuser` 的用户：
+
+```sql
+DROP USER 'newuser'@'%';
+```
+
+### MySQL用户表
+
+在 MySQL 中，用户信息存储在 `mysql` 系统数据库中的几个表中。这些表主要用于存储用户账号信息、权限和认证数据。
+
+1. **`mysql.user`**：存储用户的用户名、主机名、密码以及其他认证信息。
+2. **`mysql.db`**：存储用户对特定数据库的权限。
+3. **`mysql.tables_priv`**：存储用户对特定表的权限。
+4. **`mysql.columns_priv`**：存储用户对特定列的权限。
+5. **`mysql.profiles`**：存储用户的资源限制。
+6. **`mysql.plugin`**：存储用户的插件信息。
+
+**1. 查看用户信息**
+```sql
+SELECT Host, User FROM mysql.user;                            -- 查看所有用户
+
+SELECT Host, User FROM mysql.user WHERE User = 'username';    -- 查看特定用户
+```
+
+**2. 修改用户密码**
+
+```sql
+ALTER USER 'username'@'host' IDENTIFIED BY 'new_password';       -- 使用 `ALTER USER`
+
+SET PASSWORD FOR 'username'@'host' = PASSWORD('new_password');   -- 使用 `SET PASSWORD`
+```
+
+**3. 修改用户属性**
+
+```sql
+-- 修改用户的最大连接数
+ALTER USER 'username'@'host' MAX_QUERIES_PER_HOUR 10000 MAX_CONNECTIONS_PER_HOUR 1000 MAX_UPDATES_PER_HOUR 1000 MAX_USER_CONNECTIONS 10;
+
+-- 修改用户的默认角色
+ALTER USER 'username'@'host' DEFAULT ROLE 'role_name';
+```
+
+注意：在 MySQL 8.0 中引入了默认角色的概念，可以使用 `DEFAULT ROLE` 来设置用户的默认角色。
+
+
+
+**4. 禁用或启用用户** 
+
+```sql
+ALTER USER 'username'@'host' ACCOUNT LOCK;                          -- 禁用用户
+
+ALTER USER 'username'@'host' ACCOUNT UNLOCK;                        -- 启用用户
+
+DROP USER 'username'@'host';                                        -- 删除用户
 ```
 
 
 
 ### 用户权限设置
 
+**权限授予**：授予用户权限的基本语法如下：
+
 ```sql
--- 用户授权：(给指定用户授予指定指定数据库指定权限)
-grant 权限1,权限2,........ on 数据库名.*  to  用户名@IP; 
--- 例：
-grant select,insert,update,delete,create on student.* to 'user1'@'127.0.0.1';
-grant all on *.* to 'user2'@'127.0.0.1';
+GRANT privileges ON database.table TO 'username'@'host' [WITH GRANT OPTION];
+```
 
--- 用户权限查询：
-show grants for 用户名@IP;
--- 例：
-show grants for 'root'@'%';
+- `privileges`：可以是一个或多个权限的列表，如 `SELECT`, `INSERT`, `UPDATE`, `DELETE`, `CREATE`, `DROP`, `ALTER`, `INDEX`, `TRIGGER`, `EXECUTE`, `PROCESS`, `RELOAD`, `SHUTDOWN`, `FILE`, `REFERENCES`, `TRIGGER`, `CREATE TEMPORARY TABLES`, `LOCK TABLES`, `EVENT`, `TRIGGER`, `REPLICATION CLIENT`, `REPLICATION SLAVE`, `REPLICATION MASTER`, `REPLICATION SLAVE`, `REPLICATION CLIENT`, `REPLICATION SLAVE`, `CREATE VIEW`, `SHOW DATABASES`, `SUPER`, `PROXY`, `GRANT OPTION` 等。
+- `database.table`：指定权限应用的对象。如果是 `*.*` 表示全局权限。
+- `WITH GRANT OPTION`：允许用户授予其他用户相同的权限。
 
--- 撤销用户权限：
-revoke 权限1,权限2,........,权限n on 数据库名.* from 用户名@IP;
--- 例：
-REVOKE SELECT ON *.* FROM 'root'@'%';
+示例: 授予 `newuser` 对 `mydb` 数据库的 `SELECT` 和 `INSERT` 权限：
+
+```sql
+GRANT SELECT, INSERT ON mydb.* TO 'newuser'@'%' WITH GRANT OPTION;
+```
+
+**查询权限**：查询用户权限的基本语法如下：
+
+```sql
+SHOW GRANTS FOR 'username'@'host';
+```
+
+示例：查询 `newuser` 用户的权限：
+
+```sql
+SHOW GRANTS FOR 'newuser'@'%';
+```
+
+**撤销权限**：撤销用户权限的基本语法如下：
+
+```sql
+REVOKE privileges ON database.table FROM 'username'@'host';
+```
+
+示例：撤销 `newuser` 用户对 `mydb` 数据库的 `SELECT` 和 `INSERT` 权限：
+
+```sql
+REVOKE SELECT, INSERT ON mydb.* FROM 'newuser'@'%';
 ```
 
 
+
+
+### 允许远程连接
+
+由于MySQL的 `mysql.user` 表中的 `root` 用户的 `Host`属性默认为`localhost`, 意味着该用户只能在从本地访问数据库, 使用第三方数据库连接工具或远程访问时需要先修改`Host`为`%`：
+
+```bash
+update user set host='%' where user='root';
+flush privileges;
+
+GRANT ALL ON *.* TO 'root'@'%';
+flush privileges;
+```
+执行上述命令后，可使 `root` 用户从任何主机都可以连接到 `MySQL` 服务器，并且拥有所有数据库操作的最高权限。
 
 
 

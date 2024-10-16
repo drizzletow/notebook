@@ -826,11 +826,13 @@ cat /proc/1/comm
 
 如果输出是 `systemd`，则当前系统使用的是 `systemd` 初始化系统。如果输出是 `sysvinit` 或其他类似的字符串，则当前系统使用的是传统的 `init` 系统。
 
-### 1. init 系统下的服务管理
 
-在使用 `init` 系统的传统Linux发行版中，服务通常通过 `/etc/init.d/` 目录下的脚本来控制。服务脚本通常遵循一定的命名规则，例如 `service_name.sh`。
 
-#### 常见命令：
+::: tabs
+
+@tab init服务管理
+
+在使用 `init` 系统的传统Linux发行版中，服务通常通过 `/etc/init.d/` 目录下的脚本来控制。服务脚本通常遵循一定的命名规则，例如 `service_name.sh`。 常见命令：
 
 - **启动服务**：
   ```sh
@@ -865,11 +867,26 @@ cat /proc/1/comm
   chkconfig service_name on
   ```
 
-### 2. systemd 系统下的服务管理
+示例：假设我们要管理名为 `nginx` 的服务：
 
-`systemd` 是一种现代化的初始化系统，提供了更为丰富的功能和更精细的服务控制。在使用 `systemd` 的Linux发行版中，服务由 `.service` 文件控制，通常位于 `/lib/systemd/system/` 或 `/etc/systemd/system/` 目录下。
+```sh
+/etc/init.d/nginx start
+/etc/init.d/nginx stop
+/etc/init.d/nginx restart
+/etc/init.d/nginx status
+```
 
-#### 常见命令：
+在一些 Linux 发行版中，可以使用 service 命令来管理服务，这可以简化命令：
+```bash
+sudo service nginx start
+sudo service nginx stop
+sudo service nginx restart
+sudo service nginx status
+```
+
+@tab systemd服务管理
+
+`systemd` 是一种现代化的初始化系统，提供了更为丰富的功能和更精细的服务控制。在使用 `systemd` 的Linux发行版中，服务由 `.service` 文件控制，通常位于 `/lib/systemd/system/` 或 `/etc/systemd/system/` 目录下。常见命令：
 
 - **启动服务**：
   ```sh
@@ -916,20 +933,7 @@ cat /proc/1/comm
   sudo systemctl list-unit-files --type=service --state=disabled
   ```
 
-### 示例
-
-假设我们要管理名为 `nginx` 的服务。
-
-#### 在 `init` 系统下：
-
-```sh
-/etc/init.d/nginx start
-/etc/init.d/nginx stop
-/etc/init.d/nginx restart
-/etc/init.d/nginx status
-```
-
-#### 在 `systemd` 系统下：
+示例：在 `systemd` 系统下管理名为 `nginx` 的服务：
 
 ```sh
 sudo systemctl start nginx.service
@@ -939,17 +943,11 @@ sudo systemctl status nginx.service
 sudo systemctl enable nginx.service
 sudo systemctl disable nginx.service
 ```
+:::
 
 
 
 
-
-
-
-
-
-
-<br/>
 
 
 

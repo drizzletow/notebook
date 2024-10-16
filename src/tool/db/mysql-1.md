@@ -7,7 +7,7 @@ title:  MySQL基础
 
 
 
-## 二 安装MySQL
+## MySQL的安装和配置
 
 MySQL是一个C/S架构的软件，我们安装的MySQL 是服务端。MySQL 的客户端有很多，有自带的，有第三方的。
 
@@ -25,65 +25,123 @@ MySQL5.7文档：https://dev.mysql.com/doc/refman/5.7/en/
 
 MySQL8.0文档：https://dev.mysql.com/doc/refman/8.0/en/ 
 
-<br/>
+
+
+
+### Windows平台
 
 下载MySQL：https://dev.mysql.com/downloads/mysql/
 
 ![image-20220318112150056](vx_images/image-20220318112150056.png)
 
-<br/>
+
+
+::: info Windows平台下的安装步骤
+
+将压缩包解压到需要安装的目录，然后执行以下步骤：
+
+1. 新建配置文件 my.ini ，存放的路径为MySQL的根目录，文件内容如下：
+  ```bash
+    [client]
+    port=3306
+
+    [mysql]
+    default-character-set=utf8
+
+    [mysqld]
+    character-set-server=utf8
+    default-storage-engine=INNODB
+    explicit_defaults_for_timestamp=true
+    basedir = D:\Develop\Database\mysql-5.7.37
+    datadir = D:\Develop\Database\mysql-5.7.37\data
+  ```
+
+2. 配置环境变量 （先检查有无正确的环境变量，若没有则需要设置）
+
+	打开MySQL的bin目录，复制此路径，添加到环境变量
+
+
+3. 初始化MySQL（生成data目录）命令行执行如下命令：(以下命名全部在以管理员模式打开的)
+```bash
+mysqld --initialize-insecure
+```
+	
+	
+4. 注册MySQL服务
+```bash
+mysqld -install
+```
+	
+5. 启动MySQL服务
+```bash
+net start mysql
+```
+
+6. 修改默认账户密码
+```bash
+mysqladmin -u root password 123456
+```
+
+7. 登录使用 
+```bash	
+mysql -uroot -p
+```
+
+8. 卸载MySQL：
+```bash
+net stop mysql
+
+mysqld -remove mysql
+```	
+最后删除MySQL目录及相关的环境变量即可
+:::
+
+
 
 安装MySQL：参照blog https://blog.csdn.net/drizzletowne/article/details/120896774
 
 
 
-<br/>
 
-
-
-### 1. 压缩包方式
+### Linux手动安装
 
 下为Linux通用版本下载选项（Windows类似）：
 
 ![image-20220318084801233](vx_images/image-20220318084801233.png)
 
 
+::: info Linux平台手动安装MySql
 
-<br/>
+目标：将 `mysql5.7` 安装到  `/usr/local/mysql` (不建议安装到其他位置，可能会导致socket连接失败)
 
-**Linux下的安装步骤**：https://dev.mysql.com/doc/refman/5.7/en/binary-installation.html
-
-```shell
-
-0.  目标：将 mysql5.7 安装到  /usr/local/mysql (不建议安装到其他位置，可能会导致socket连接失败)
-
-	准备：在/usr/local/ 目录下创建 mysql 和 software 目录
+准备：在`/usr/local/` 目录下创建 `mysql` 和 `software` 目录
 	
 
 1. 下载 mysql的压缩包 (或上传自己已下载的压缩包到指定目录即可)
+```bash
 cd /usr/local/software
 wget http://dev.MySQL.com/get/Downloads/MySQL-5.7/mysql-5.7.37-Linux-glibc2.12-x86_64.tar.gz
-
+```
 
 2、解压并复制到 mysql目录
-
+```bash
 tar -xvf mysql-5.7.37-Linux-glibc2.12-x86_64.tar.gz
 
 mv ./mysql-5.7.37-linux-glibc2.12-x86_64/* /usr/local/mysql/
-
+```
 
 
 3、安装依赖、创建mysql用户组及其用户
-
+```bash
 yum install libaio   （Ubuntu使用：sudo apt-get install libaio1）
 
 groupadd mysql
 useradd -r -g mysql -s /bin/false mysql
-
+```
 
 
 4、创建相关目录、设置权限、初始化mysql 
-
+```bash
 cd /usr/local/mysql/
 
 mkdir mysql-files
@@ -93,46 +151,51 @@ chmod 750 mysql-files
 bin/mysqld --initialize --user=mysql  # 记住末尾自动生成的root密码 如：lZw.qSdCS7pV
 bin/mysql_ssl_rsa_setup
 bin/mysqld_safe --user=mysql &
-
+```
 
 5. 配置环境变量
+```bash
 vim /etc/profile.d/mysql.sh  # 在里面加入: 
 export PATH=$PATH:/usr/local/mysql/bin
 
 source  /etc/profile  # 使用source命令使修改立刻生效：  
-
+```
 
 6. 将mysql添加到启动项
-
+```bash
 cp support-files/mysql.server /etc/init.d/mysql.server
 
 chkconfig --add mysql.server  （ 或 systemctl enable mysql.server）
-
+```
 
 7. 使用 （首次使用需要先修改密码）
-
+```bash
 mysql -uroot -p
 
 mysql> alter user user() identified by "123456";
-
+```
 
 8. 启动、关闭和重启
+```bash
 /etc/init.d/mysql.server start
 /etc/init.d/mysql.server stop
 /etc/init.d/mysql.server restart
-
-
-9. 其他常用命令
->mysql status;                            # 查看mysql基本信息
->mysql SHOW VARIABLES LIKE 'character%';  # 查看数据库字符集相关设置信息
-
 ```
 
-<br/>
+9. 其他常用命令
+```bash
+>mysql status;                            # 查看mysql基本信息
+>mysql SHOW VARIABLES LIKE 'character%';  # 查看数据库字符集相关设置信息
+```
+:::
 
-```shell
-# 简单配置mysql
+**Linux下的安装参考**：https://dev.mysql.com/doc/refman/5.7/en/binary-installation.html
 
+
+
+简单配置mysql:
+
+```bash
 vi /etc/my.cnf   # 添加如下信息：
 
 [client]
@@ -144,7 +207,6 @@ default-character-set=utf8
 [mysqld]
 character-set-server=utf8
 default-storage-engine=INNODB
-
 ```
 
 【注意】关于Linux下没有my.cnf的情形：从5.7.18开始官方不再二进制包中提供my-default.cnf文件。
@@ -174,79 +236,10 @@ mysql> flush   privileges;
 
 
 
-<br/>
 
 
 
-**Windows下的安装步骤**：
-
-```shell
-将压缩包解压到需要安装的目录，然后执行以下步骤：
-
-1. 新建配置文件 my.ini ，存放的路径为MySQL的根目录，文件内容如下：
-    [client]
-    port=3306
-
-    [mysql]
-    default-character-set=utf8
-
-    [mysqld]
-    character-set-server=utf8
-    default-storage-engine=INNODB
-    explicit_defaults_for_timestamp=true
-    basedir = D:\Develop\Database\mysql-5.7.37
-    datadir = D:\Develop\Database\mysql-5.7.37\data
-
-
-2. 配置环境变量 （最好记得设置，不然大概率要出问题）
-
-	打开MySQL的bin目录，复制此路径，添加到环境变量
-
-
-3. 初始化MySQL（生成data目录）
-	
-	命令行执行如下命令：(以下命名全部在以管理员模式打开的)
-	
-	mysqld --initialize-insecure
-	
-	
-4. 注册MySQL服务
-	
-	mysqld -install
-	
-	
-5. 启动MySQL服务
-
-	net start mysql
-
-
-6. 修改默认账户密码
-
-	mysqladmin -u root password 123456
-
-
-7. 登录使用 
-	
-	mysql -uroot -p
-
-
-卸载MySQL：
-
-	net stop mysql
-	
-	mysqld -remove mysql
-	
-	最后删除MySQL目录及相关的环境变量即可
-
-```
-
-
-
-<br/>
-
-
-
-### 2. RPM的方式
+### Linux平台-RPM
 
 卸载MySQL：
 
@@ -305,17 +298,15 @@ rm -rf /usr/my.cnf
 
 
 
-### 3. 配置文件参数
+### MySql配置文件
 
-```shell
- 
-mysql --help|grep 'my.cnf'      # 查看mysql默认读取my.cnf的目录
+查看mysql默认读取`my.cnf`的目录
 
-# 如果没有设置使用指定目录的my.cnf，mysql启动时会读取安装目录根目录及默认目录下的my.cnf文件
-
+```bash
+mysql --help|grep 'my.cnf'      
 ```
+如果没有设置使用指定目录的`my.cnf`，mysql启动时会读取安装目录根目录及默认目录下的`my.cnf`文件
 
-<br/>
 
 ```shell
 # my.cnf
@@ -780,56 +771,54 @@ interactive-timeout
 
 
 
-<br/>
 
-## 1. DCL用户权限
+## DCL用户权限管理
 
-DCL（Data Control Language），   数据控制语言，用来定义**访问权限和安全级别** ，下为常用的一些用户管理命令：
+DCL（Data Control Language），   数据控制语言，用来定义**访问权限和安全级别** ，下为MySql常用的一些用户管理命令：
 
-**创建、删除用户**: 
+### 创建/删除用户
 
 ```SQL
-# 创建用户
+-- 创建用户
 create user 用户名@指定ip identified by 密码;
 # 例：（ % 表示任意IP均可登陆）
 create user test123@localhost IDENTIFIED by '123123';
 create user test456@10.4.10.18 IDENTIFIED by '123123';
 create user test789@'%' IDENTIFIED by '123123';
 
-# 删除用户
+-- 删除用户
 drop user 用户名@IP;
-# 例：
+-- 例：
 drop user test123@localhost;
 ```
 
-<br/>
 
-**用户权限设置**: 
+
+### 用户权限设置
 
 ```sql
-# 用户授权：(给指定用户授予指定指定数据库指定权限)
+-- 用户授权：(给指定用户授予指定指定数据库指定权限)
 grant 权限1,权限2,........ on 数据库名.*  to  用户名@IP; 
-# 例：
+-- 例：
 grant select,insert,update,delete,create on student.* to 'user1'@'127.0.0.1';
 grant all on *.* to 'user2'@'127.0.0.1';
 
-# 用户权限查询：
+-- 用户权限查询：
 show grants for 用户名@IP;
-# 例：
+-- 例：
 show grants for 'root'@'%';
 
-# 撤销用户权限：
+-- 撤销用户权限：
 revoke 权限1,权限2,........,权限n on 数据库名.* from 用户名@IP;
-# 例：
+-- 例：
 REVOKE SELECT ON *.* FROM 'root'@'%';
 ```
 
-<br/>
 
 
 
 
-### 8. 常用数据类型
+## MySql常用数据类型
 
 | 常用数据类型 | 大小（bytes） | 说明                                                         |
 | :----------: | :-----------: | ------------------------------------------------------------ |
@@ -1037,7 +1026,7 @@ CHAR 适合存储很短的字符串，或者所有值都接近同一个长度。
 
 
 
-## 9. 备份与恢复
+## 数据库备份与恢复
 
 - 备份
 

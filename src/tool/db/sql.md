@@ -1,7 +1,7 @@
 ---
 
 order: 1
-title:  SQL核心技能
+title:  SQL语言基础
 
 ---
 
